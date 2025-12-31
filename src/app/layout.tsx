@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { UserListsProvider } from '@/contexts/UserListsContext';
 
 export const metadata: Metadata = {
   title: 'PolitiTrack - Company Political Analysis',
@@ -16,7 +17,9 @@ export default function RootLayout({
     <html lang="en">
       <body className="font-sans antialiased">
         <AuthProvider>
-          {children}
+          <UserListsProvider>
+            {children}
+          </UserListsProvider>
         </AuthProvider>
       </body>
     </html>

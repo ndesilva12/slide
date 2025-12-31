@@ -1,23 +1,53 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, Suspense, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SearchBar } from '@/components/company/SearchBar';
 import { CompanyReportView } from '@/components/company/CompanyReport';
-import { CompanyCard } from '@/components/company/CompanyCard';
+import { SortableRankingList } from '@/components/company/SortableRankingList';
 import { Spinner } from '@/components/ui/Spinner';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { CompanyReport } from '@/types';
-import { Search, Shield, Sparkles, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ThumbsUp, ThumbsDown, Globe, User, GripVertical } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import { useUserLists } from '@/contexts/UserListsContext';
+import Link from 'next/link';
+
+interface RankingItem {
+  companyKey: string;
+  companyName: string;
+  rank: number;
+  company?: {
+    name: string;
+    ticker?: string;
+    industry?: string;
+  };
+  analysis?: {
+    overallLeaning?: string;
+  };
+  supportCount?: number;
+  opposeCount?: number;
+}
+
+interface GlobalRankings {
+  support: RankingItem[];
+  oppose: RankingItem[];
+}
 
 function HomeContent() {
   const searchParams = useSearchParams();
+  const { user } = useAuth();
+  const { lists, reorderList, loading: listsLoading } = useUserLists();
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentReport, setCurrentReport] = useState<CompanyReport | null>(null);
-  const [recentSearches, setRecentSearches] = useState<CompanyReport[]>([]);
+  const [viewMode, setViewMode] = useState<'my' | 'global'>('my');
+  const [globalRankings, setGlobalRankings] = useState<GlobalRankings>({ support: [], oppose: [] });
+  const [globalLoading, setGlobalLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   // Check for report from Browse page on mount
   useEffect(() => {
@@ -29,7 +59,6 @@ function HomeContent() {
           const report = JSON.parse(storedReport);
           setCurrentReport(report);
           sessionStorage.removeItem('selectedReport');
-          // Clean up URL
           window.history.replaceState({}, '', '/');
         } catch (e) {
           console.error('Failed to parse stored report:', e);
@@ -37,6 +66,35 @@ function HomeContent() {
       }
     }
   }, [searchParams]);
+
+  // If not logged in, show global view by default
+  useEffect(() => {
+    if (!user) {
+      setViewMode('global');
+    }
+  }, [user]);
+
+  // Fetch global rankings
+  const fetchGlobalRankings = useCallback(async () => {
+    setGlobalLoading(true);
+    try {
+      const response = await fetch('/api/rankings?limit=10');
+      const data = await response.json();
+      if (data.success) {
+        setGlobalRankings(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch global rankings:', error);
+    } finally {
+      setGlobalLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (viewMode === 'global') {
+      fetchGlobalRankings();
+    }
+  }, [viewMode, fetchGlobalRankings]);
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -57,10 +115,6 @@ function HomeContent() {
       }
 
       setCurrentReport(data.data);
-      setRecentSearches((prev) => {
-        const filtered = prev.filter((r) => r.company.name !== data.data.company.name);
-        return [data.data, ...filtered].slice(0, 5);
-      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
@@ -68,31 +122,59 @@ function HomeContent() {
     }
   };
 
-  const handleClearReport = () => {
+  const handleBack = () => {
     setCurrentReport(null);
     setError(null);
   };
 
+  const handleItemClick = async (item: RankingItem) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ companyName: item.companyName || item.company?.name }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setCurrentReport(data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch report:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleReorder = async (listType: 'support' | 'oppose', orderedKeys: string[]) => {
+    await reorderList(listType, orderedKeys);
+  };
+
+  // Convert user lists to ranking items
+  const mySupport: RankingItem[] = lists.support.slice(0, 10).map((item, index) => ({
+    companyKey: item.companyKey,
+    companyName: item.companyName,
+    rank: index + 1,
+  }));
+
+  const myOppose: RankingItem[] = lists.oppose.slice(0, 10).map((item, index) => ({
+    companyKey: item.companyKey,
+    companyName: item.companyName,
+    rank: index + 1,
+  }));
+
+  const showRankings = !currentReport && !isLoading && !error;
+
   return (
     <MainLayout>
-      <div className="space-y-8">
-        {/* Hero Section */}
-        <div className="text-center py-8 md:py-12">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-4">
-            Discover Company
-            <span className="text-blue-600"> Politics</span>
-          </h1>
-          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto mb-8">
-            Search any company to uncover their political donations, public positions,
-            and affiliations based on public records and news.
-          </p>
-
-          {/* Search Bar */}
+      <div className="space-y-6">
+        {/* Search Bar - Always visible at top */}
+        <div className="text-center pt-4">
           <div className="max-w-2xl mx-auto">
             <SearchBar
               onSearch={handleSearch}
               isLoading={isLoading}
-              placeholder="Enter a company name (e.g., Apple, Amazon, Tesla...)"
+              placeholder="Search for a company..."
             />
           </div>
         </div>
@@ -126,74 +208,193 @@ function HomeContent() {
 
         {/* Current Report */}
         {currentReport && !isLoading && (
-          <div className="mt-8">
+          <div>
             <div className="mb-4">
-              <Button variant="ghost" onClick={handleClearReport}>
+              <Button variant="ghost" onClick={handleBack}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                New Search
+                Back
               </Button>
             </div>
             <CompanyReportView report={currentReport} />
           </div>
         )}
 
-        {/* Empty State / Features */}
-        {!currentReport && !isLoading && !error && (
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto mt-12">
-            <Card className="text-center p-6">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Search className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+        {/* Rankings View */}
+        {showRankings && (
+          <div className="space-y-6">
+            {/* View Toggle */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                {user && (
+                  <Button
+                    variant={viewMode === 'my' ? 'primary' : 'ghost'}
+                    onClick={() => setViewMode('my')}
+                  >
+                    <User className="h-4 w-4 mr-2" />
+                    My Rankings
+                  </Button>
+                )}
+                <Button
+                  variant={viewMode === 'global' ? 'primary' : 'ghost'}
+                  onClick={() => setViewMode('global')}
+                >
+                  <Globe className="h-4 w-4 mr-2" />
+                  Global
+                </Button>
               </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Deep Research
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                AI-powered analysis of political donations, public statements, and affiliations.
-              </p>
-            </Card>
 
-            <Card className="text-center p-6">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Shield className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Public Sources
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                All data sourced from FEC records, news articles, and public statements.
-              </p>
-            </Card>
-
-            <Card className="text-center p-6">
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Sparkles className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-              </div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
-                Save & Organize
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Create lists to track companies you support, oppose, or want to monitor.
-              </p>
-            </Card>
-          </div>
-        )}
-
-        {/* Recent Searches */}
-        {recentSearches.length > 0 && !currentReport && !isLoading && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-              Recent Searches
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {recentSearches.map((report) => (
-                <CompanyCard
-                  key={report.id || report.company.name}
-                  report={report}
-                  onClick={() => setCurrentReport(report)}
-                  showAddToList={false}
-                />
-              ))}
+              {viewMode === 'my' && user && (
+                <Button
+                  variant={isEditing ? 'primary' : 'outline'}
+                  size="sm"
+                  onClick={() => setIsEditing(!isEditing)}
+                >
+                  <GripVertical className="h-4 w-4 mr-1" />
+                  {isEditing ? 'Done' : 'Reorder'}
+                </Button>
+              )}
             </div>
+
+            {/* Not logged in message for My Rankings */}
+            {viewMode === 'my' && !user && (
+              <Card>
+                <CardContent className="p-8 text-center">
+                  <User className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    Sign in to see your rankings
+                  </h3>
+                  <p className="text-gray-500 dark:text-gray-400 mb-4">
+                    Create personalized lists of companies you support or oppose.
+                  </p>
+                  <div className="flex justify-center gap-3">
+                    <Link href="/login">
+                      <Button variant="outline">Sign In</Button>
+                    </Link>
+                    <Link href="/signup">
+                      <Button>Sign Up</Button>
+                    </Link>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* My Rankings View */}
+            {viewMode === 'my' && user && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Support Column */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ThumbsUp className="h-5 w-5 text-green-600" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Support
+                      </h3>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        ({lists.support.length})
+                      </span>
+                    </div>
+                    {listsLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Spinner />
+                      </div>
+                    ) : (
+                      <SortableRankingList
+                        items={mySupport}
+                        onReorder={(keys) => handleReorder('support', keys)}
+                        onItemClick={handleItemClick}
+                        isEditable={isEditing}
+                        emptyMessage="No companies in your support list"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Oppose Column */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ThumbsDown className="h-5 w-5 text-red-600" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Oppose
+                      </h3>
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
+                        ({lists.oppose.length})
+                      </span>
+                    </div>
+                    {listsLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Spinner />
+                      </div>
+                    ) : (
+                      <SortableRankingList
+                        items={myOppose}
+                        onReorder={(keys) => handleReorder('oppose', keys)}
+                        onItemClick={handleItemClick}
+                        isEditable={isEditing}
+                        emptyMessage="No companies in your oppose list"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Global Rankings View */}
+            {viewMode === 'global' && (
+              <div className="grid md:grid-cols-2 gap-6">
+                {/* Most Supported Column */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ThumbsUp className="h-5 w-5 text-green-600" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Most Supported
+                      </h3>
+                    </div>
+                    {globalLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Spinner />
+                      </div>
+                    ) : (
+                      <SortableRankingList
+                        items={globalRankings.support}
+                        onItemClick={handleItemClick}
+                        isEditable={false}
+                        emptyMessage="No companies ranked yet"
+                        showCount
+                        countType="support"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+
+                {/* Most Opposed Column */}
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-2 mb-4">
+                      <ThumbsDown className="h-5 w-5 text-red-600" />
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Most Opposed
+                      </h3>
+                    </div>
+                    {globalLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Spinner />
+                      </div>
+                    ) : (
+                      <SortableRankingList
+                        items={globalRankings.oppose}
+                        onItemClick={handleItemClick}
+                        isEditable={false}
+                        emptyMessage="No companies ranked yet"
+                        showCount
+                        countType="oppose"
+                      />
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -1,133 +1,79 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { Card, CardContent, CardHeader } from '@/components/ui/Card';
+import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { Modal } from '@/components/ui/Modal';
 import { Badge } from '@/components/ui/Badge';
-import { LoadingScreen } from '@/components/ui/Spinner';
+import { Spinner } from '@/components/ui/Spinner';
+import { SortableRankingList } from '@/components/company/SortableRankingList';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserList, ListType } from '@/types';
+import { useUserLists } from '@/contexts/UserListsContext';
 import {
-  Plus,
   ThumbsUp,
   ThumbsDown,
-  FolderPlus,
-  Trash2,
-  Edit2,
   ChevronRight,
   Lock,
+  ArrowLeft,
+  GripVertical,
+  Trash2,
 } from 'lucide-react';
 import Link from 'next/link';
 
-const DEFAULT_LISTS: Omit<UserList, 'id' | 'userId' | 'createdAt' | 'updatedAt'>[] = [
-  {
-    name: 'Support',
-    type: 'support',
-    description: 'Companies I choose to support based on their values',
-    companyIds: [],
-  },
-  {
-    name: 'Oppose',
-    type: 'oppose',
-    description: 'Companies I choose to avoid based on their values',
-    companyIds: [],
-  },
-];
+type ListType = 'support' | 'oppose';
+
+interface RankingItem {
+  companyKey: string;
+  companyName: string;
+  rank: number;
+}
 
 export default function LibraryPage() {
+  const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [lists, setLists] = useState<UserList[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [newListName, setNewListName] = useState('');
-  const [newListDescription, setNewListDescription] = useState('');
+  const { lists, loading: listsLoading, reorderList, removeFromList } = useUserLists();
+  const [selectedList, setSelectedList] = useState<ListType | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadUserLists();
-    } else {
-      setIsLoading(false);
-    }
-  }, [user]);
+  const handleListClick = (listType: ListType) => {
+    setSelectedList(listType);
+    setIsEditing(false);
+  };
 
-  const loadUserLists = async () => {
-    setIsLoading(true);
-    try {
-      // In production, fetch from Firestore
-      // For now, use default lists as demo
-      const demoLists: UserList[] = DEFAULT_LISTS.map((list, i) => ({
-        ...list,
-        id: `default-${i}`,
-        userId: user!.uid,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }));
-      setLists(demoLists);
-    } catch (error) {
-      console.error('Failed to load lists:', error);
-    } finally {
-      setIsLoading(false);
+  const handleBack = () => {
+    setSelectedList(null);
+    setIsEditing(false);
+  };
+
+  const handleItemClick = (item: RankingItem) => {
+    // Store company info and navigate to home page to show report
+    sessionStorage.setItem('selectedReport', JSON.stringify({
+      companyKey: item.companyKey,
+      company: { name: item.companyName, id: item.companyKey },
+      analysis: { overallLeaning: 'Unknown' },
+    }));
+    router.push('/?fromBrowse=true');
+  };
+
+  const handleReorder = async (orderedKeys: string[]) => {
+    if (selectedList) {
+      await reorderList(selectedList, orderedKeys);
     }
   };
 
-  const handleCreateList = async () => {
-    if (!newListName.trim() || !user) return;
-
-    const newList: UserList = {
-      id: `custom-${Date.now()}`,
-      userId: user.uid,
-      name: newListName.trim(),
-      type: 'custom',
-      description: newListDescription.trim() || undefined,
-      companyIds: [],
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
-    setLists((prev) => [...prev, newList]);
-    setNewListName('');
-    setNewListDescription('');
-    setShowCreateModal(false);
-
-    // In production, save to Firestore
-  };
-
-  const handleDeleteList = async (listId: string) => {
-    if (confirm('Are you sure you want to delete this list?')) {
-      setLists((prev) => prev.filter((l) => l.id !== listId));
-      // In production, delete from Firestore
-    }
-  };
-
-  const getListIcon = (type: ListType) => {
-    switch (type) {
-      case 'support':
-        return <ThumbsUp className="h-5 w-5 text-green-500" />;
-      case 'oppose':
-        return <ThumbsDown className="h-5 w-5 text-red-500" />;
-      default:
-        return <FolderPlus className="h-5 w-5 text-blue-500" />;
-    }
-  };
-
-  const getListColor = (type: ListType) => {
-    switch (type) {
-      case 'support':
-        return 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800';
-      case 'oppose':
-        return 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800';
-      default:
-        return 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800';
+  const handleRemove = async (companyKey: string) => {
+    if (selectedList && confirm('Remove this company from the list?')) {
+      await removeFromList(selectedList, companyKey);
     }
   };
 
   if (authLoading) {
     return (
       <MainLayout title="Library" subtitle="Organize companies into lists">
-        <LoadingScreen message="Loading..." />
+        <div className="flex justify-center py-12">
+          <Spinner size="lg" />
+        </div>
       </MainLayout>
     );
   }
@@ -161,137 +107,244 @@ export default function LibraryPage() {
     );
   }
 
-  if (isLoading) {
+  // Detailed list view
+  if (selectedList) {
+    const listItems: RankingItem[] = (selectedList === 'support' ? lists.support : lists.oppose).map(
+      (item, index) => ({
+        companyKey: item.companyKey,
+        companyName: item.companyName,
+        rank: index + 1,
+      })
+    );
+
+    const listConfig = {
+      support: {
+        title: 'Support List',
+        description: 'Companies you support based on their values',
+        icon: <ThumbsUp className="h-6 w-6 text-green-600" />,
+        color: 'bg-green-50 dark:bg-green-900/20',
+      },
+      oppose: {
+        title: 'Oppose List',
+        description: 'Companies you oppose based on their values',
+        icon: <ThumbsDown className="h-6 w-6 text-red-600" />,
+        color: 'bg-red-50 dark:bg-red-900/20',
+      },
+    };
+
+    const config = listConfig[selectedList];
+
     return (
       <MainLayout title="Library" subtitle="Organize companies into lists">
-        <LoadingScreen message="Loading your lists..." />
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <Button variant="ghost" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Library
+            </Button>
+
+            <Button
+              variant={isEditing ? 'primary' : 'outline'}
+              size="sm"
+              onClick={() => setIsEditing(!isEditing)}
+            >
+              <GripVertical className="h-4 w-4 mr-1" />
+              {isEditing ? 'Done' : 'Reorder'}
+            </Button>
+          </div>
+
+          {/* List Header */}
+          <Card className={config.color}>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3">
+                {config.icon}
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {config.title}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {config.description}
+                  </p>
+                </div>
+                <Badge variant={selectedList === 'support' ? 'success' : 'danger'} className="ml-auto">
+                  {listItems.length} companies
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* List Content */}
+          <Card>
+            <CardContent className="p-4">
+              {listsLoading ? (
+                <div className="flex justify-center py-8">
+                  <Spinner />
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {listItems.length === 0 ? (
+                    <div className="text-center py-8">
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No companies in this list yet.
+                      </p>
+                      <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
+                        Search for companies and add them to this list.
+                      </p>
+                    </div>
+                  ) : (
+                    listItems.map((item, index) => (
+                      <div
+                        key={item.companyKey}
+                        className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700"
+                      >
+                        {isEditing && (
+                          <div className="cursor-grab">
+                            <GripVertical className="h-5 w-5 text-gray-400" />
+                          </div>
+                        )}
+
+                        <div className="flex items-center justify-center w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-full text-sm font-bold text-gray-600 dark:text-gray-300">
+                          {index + 1}
+                        </div>
+
+                        <div
+                          className="flex-1 cursor-pointer"
+                          onClick={() => !isEditing && handleItemClick(item)}
+                        >
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {item.companyName}
+                          </span>
+                        </div>
+
+                        {isEditing && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleRemove(item.companyKey)}
+                            className="p-1 text-gray-400 hover:text-red-500"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+
+                        {!isEditing && (
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </MainLayout>
     );
   }
 
+  // Main library view
   return (
     <MainLayout title="Library" subtitle="Organize companies into lists">
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Your Lists
-            </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {lists.length} lists • {lists.reduce((sum, l) => sum + l.companyIds.length, 0)} companies
-            </p>
-          </div>
-          <Button onClick={() => setShowCreateModal(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            New List
-          </Button>
+        <div>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Your Lists
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {lists.support.length + lists.oppose.length} companies across 2 lists
+          </p>
         </div>
 
         {/* Lists Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {lists.map((list) => (
-            <Card
-              key={list.id}
-              className={`border-2 ${getListColor(list.type)} hover:shadow-md transition-all cursor-pointer`}
-            >
-              <CardContent className="p-5">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex items-center space-x-3">
-                    {getListIcon(list.type)}
-                    <div>
-                      <h3 className="font-semibold text-gray-900 dark:text-white">
-                        {list.name}
-                      </h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">
-                        {list.companyIds.length} companies
-                      </p>
-                    </div>
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Support List Card */}
+          <Card
+            hover
+            onClick={() => handleListClick('support')}
+            className="border-2 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800"
+          >
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <ThumbsUp className="h-6 w-6 text-green-600" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                      Support
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {lists.support.length} companies
+                    </p>
                   </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
+              </div>
 
-                  {list.type === 'custom' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteList(list.id);
-                      }}
-                      className="p-1 text-gray-400 hover:text-red-500"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                Companies you support based on their values
+              </p>
+
+              {lists.support.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {lists.support.slice(0, 3).map((item) => (
+                    <Badge key={item.companyKey} variant="success" size="sm">
+                      {item.companyName}
+                    </Badge>
+                  ))}
+                  {lists.support.length > 3 && (
+                    <Badge variant="default" size="sm">
+                      +{lists.support.length - 3} more
+                    </Badge>
                   )}
                 </div>
+              )}
+            </CardContent>
+          </Card>
 
-                {list.description && (
-                  <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
-                    {list.description}
-                  </p>
-                )}
-
-                <div className="flex items-center justify-between">
-                  <Badge variant={list.type === 'support' ? 'success' : list.type === 'oppose' ? 'danger' : 'default'}>
-                    {list.type}
-                  </Badge>
-                  <ChevronRight className="h-4 w-4 text-gray-400" />
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-
-          {/* Add New List Card */}
+          {/* Oppose List Card */}
           <Card
-            className="border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-blue-400 dark:hover:border-blue-500 transition-colors cursor-pointer"
-            onClick={() => setShowCreateModal(true)}
+            hover
+            onClick={() => handleListClick('oppose')}
+            className="border-2 bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800"
           >
-            <CardContent className="p-5 flex flex-col items-center justify-center h-full min-h-[160px]">
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-3">
-                <Plus className="h-6 w-6 text-gray-400" />
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center space-x-3">
+                  <ThumbsDown className="h-6 w-6 text-red-600" />
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                      Oppose
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      {lists.oppose.length} companies
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
-              <p className="font-medium text-gray-600 dark:text-gray-400">
-                Create New List
+
+              <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
+                Companies you oppose based on their values
               </p>
+
+              {lists.oppose.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {lists.oppose.slice(0, 3).map((item) => (
+                    <Badge key={item.companyKey} variant="danger" size="sm">
+                      {item.companyName}
+                    </Badge>
+                  ))}
+                  {lists.oppose.length > 3 && (
+                    <Badge variant="default" size="sm">
+                      +{lists.oppose.length - 3} more
+                    </Badge>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Create List Modal */}
-        <Modal
-          isOpen={showCreateModal}
-          onClose={() => setShowCreateModal(false)}
-          title="Create New List"
-          size="md"
-        >
-          <div className="space-y-4">
-            <Input
-              label="List Name"
-              placeholder="e.g., Tech Companies to Watch"
-              value={newListName}
-              onChange={(e) => setNewListName(e.target.value)}
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Description (optional)
-              </label>
-              <textarea
-                className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="What is this list for?"
-                rows={3}
-                value={newListDescription}
-                onChange={(e) => setNewListDescription(e.target.value)}
-              />
-            </div>
-            <div className="flex justify-end gap-3 pt-4">
-              <Button variant="outline" onClick={() => setShowCreateModal(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleCreateList} disabled={!newListName.trim()}>
-                Create List
-              </Button>
-            </div>
-          </div>
-        </Modal>
       </div>
     </MainLayout>
   );

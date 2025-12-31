@@ -1,21 +1,40 @@
 'use client';
 
 import React from 'react';
-import { Building2, ExternalLink, Plus } from 'lucide-react';
+import { Building2, ExternalLink, ThumbsUp, ThumbsDown, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { PoliticalLeaningBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CompanyReport } from '@/types';
+import { useUserLists } from '@/contexts/UserListsContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { createCompanyKey } from '@/lib/company-utils';
 
 interface CompanyCardProps {
   report: CompanyReport;
   onClick?: () => void;
-  onAddToList?: () => void;
-  showAddToList?: boolean;
+  showListButtons?: boolean;
 }
 
-export function CompanyCard({ report, onClick, onAddToList, showAddToList = true }: CompanyCardProps) {
+export function CompanyCard({ report, onClick, showListButtons = true }: CompanyCardProps) {
   const { company, analysis } = report;
+  const { user } = useAuth();
+  const { isInSupport, isInOppose, addToList, removeFromList } = useUserLists();
+
+  const companyKey = report.companyKey || createCompanyKey(company.name);
+  const inSupport = isInSupport(companyKey);
+  const inOppose = isInOppose(companyKey);
+
+  const handleListAction = async (e: React.MouseEvent, listType: 'support' | 'oppose') => {
+    e.stopPropagation();
+    const isInList = listType === 'support' ? inSupport : inOppose;
+
+    if (isInList) {
+      await removeFromList(listType, companyKey);
+    } else {
+      await addToList(listType, companyKey, company.name);
+    }
+  };
 
   return (
     <Card hover onClick={onClick} className="overflow-hidden">
@@ -62,18 +81,27 @@ export function CompanyCard({ report, onClick, onAddToList, showAddToList = true
           </div>
 
           <div className="flex items-center space-x-2">
-            {showAddToList && onAddToList && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddToList();
-                }}
-                className="p-1"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
+            {showListButtons && user && (
+              <>
+                <Button
+                  variant={inSupport ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={(e) => handleListAction(e, 'support')}
+                  className={`p-1.5 ${inSupport ? 'bg-green-600 hover:bg-green-700' : 'hover:text-green-600'}`}
+                  title={inSupport ? 'Remove from Support' : 'Add to Support'}
+                >
+                  {inSupport ? <Check className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
+                </Button>
+                <Button
+                  variant={inOppose ? 'primary' : 'ghost'}
+                  size="sm"
+                  onClick={(e) => handleListAction(e, 'oppose')}
+                  className={`p-1.5 ${inOppose ? 'bg-red-600 hover:bg-red-700' : 'hover:text-red-600'}`}
+                  title={inOppose ? 'Remove from Oppose' : 'Add to Oppose'}
+                >
+                  {inOppose ? <Check className="h-4 w-4" /> : <ThumbsDown className="h-4 w-4" />}
+                </Button>
+              </>
             )}
             {company.website && (
               <a

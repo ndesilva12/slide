@@ -8,7 +8,9 @@ import {
   Users,
   TrendingUp,
   ExternalLink,
-  Plus,
+  ThumbsUp,
+  ThumbsDown,
+  Check,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
@@ -16,14 +18,31 @@ import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { CompanyReport as CompanyReportType } from '@/types';
+import { useUserLists } from '@/contexts/UserListsContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { createCompanyKey } from '@/lib/company-utils';
 
 interface CompanyReportProps {
   report: CompanyReportType;
-  onAddToList?: () => void;
 }
 
-export function CompanyReportView({ report, onAddToList }: CompanyReportProps) {
+export function CompanyReportView({ report }: CompanyReportProps) {
   const { company, analysis } = report;
+  const { user } = useAuth();
+  const { isInSupport, isInOppose, addToList, removeFromList } = useUserLists();
+
+  const companyKey = report.companyKey || createCompanyKey(company.name);
+  const inSupport = isInSupport(companyKey);
+  const inOppose = isInOppose(companyKey);
+
+  const handleListAction = async (listType: 'support' | 'oppose') => {
+    const isInList = listType === 'support' ? inSupport : inOppose;
+    if (isInList) {
+      await removeFromList(listType, companyKey);
+    } else {
+      await addToList(listType, companyKey, company.name);
+    }
+  };
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     donations: true,
     statements: true,
@@ -85,11 +104,25 @@ export function CompanyReportView({ report, onAddToList }: CompanyReportProps) {
             </div>
 
             <div className="flex items-center space-x-3">
-              {onAddToList && (
-                <Button variant="outline" onClick={onAddToList}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add to List
-                </Button>
+              {user && (
+                <>
+                  <Button
+                    variant={inSupport ? 'primary' : 'outline'}
+                    onClick={() => handleListAction('support')}
+                    className={inSupport ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-500 hover:text-green-600'}
+                  >
+                    {inSupport ? <Check className="h-4 w-4 mr-2" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
+                    {inSupport ? 'Supporting' : 'Support'}
+                  </Button>
+                  <Button
+                    variant={inOppose ? 'primary' : 'outline'}
+                    onClick={() => handleListAction('oppose')}
+                    className={inOppose ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-500 hover:text-red-600'}
+                  >
+                    {inOppose ? <Check className="h-4 w-4 mr-2" /> : <ThumbsDown className="h-4 w-4 mr-2" />}
+                    {inOppose ? 'Opposing' : 'Oppose'}
+                  </Button>
+                </>
               )}
               {company.website && (
                 <a href={company.website} target="_blank" rel="noopener noreferrer">
