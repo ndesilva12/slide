@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { analyzeCompany } from '@/lib/ai-service';
-import { getReportByCompanyName, saveReport } from '@/lib/firestore';
+import { getFirebaseAdmin } from '@/lib/firebase-admin';
+import { createCompanyKey, daysSince } from '@/lib/company-utils';
+import { CompanyReport } from '@/types';
+
+const CACHE_EXPIRY_DAYS = 30;
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,32 +17,98 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check cache first
-    const cachedReport = await getReportByCompanyName(companyName);
-    if (cachedReport) {
-      // Check if cache is less than 7 days old
-      const cacheAge = Date.now() - new Date(cachedReport.updatedAt).getTime();
-      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    const companyKey = createCompanyKey(companyName);
+    const { db } = getFirebaseAdmin();
 
-      if (cacheAge < sevenDays) {
-        return NextResponse.json({
-          success: true,
-          data: { ...cachedReport, generatedBy: 'cache' },
-        });
+    // Check cache first
+    if (db) {
+      try {
+        const docRef = db.collection('reports').doc(companyKey);
+        const docSnap = await docRef.get();
+
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          const updatedAt = data?.updatedAt?.toDate?.() || new Date(data?.updatedAt);
+          const ageInDays = daysSince(updatedAt);
+
+          if (ageInDays < CACHE_EXPIRY_DAYS) {
+            // Update search count
+            await docRef.update({
+              searchCount: (data?.searchCount || 0) + 1,
+            });
+
+            // Convert Firestore timestamps to dates
+            const report: CompanyReport = {
+              id: docSnap.id,
+              companyKey: data?.companyKey || companyKey,
+              company: data?.company,
+              analysis: {
+                ...data?.analysis,
+                lastUpdated: data?.analysis?.lastUpdated?.toDate?.() || new Date(data?.analysis?.lastUpdated),
+              },
+              createdAt: data?.createdAt?.toDate?.() || new Date(data?.createdAt),
+              updatedAt: updatedAt,
+              searchCount: (data?.searchCount || 0) + 1,
+              generatedBy: 'cache',
+            };
+
+            console.log(`Cache hit for "${companyName}" (key: ${companyKey}), age: ${ageInDays} days`);
+
+            return NextResponse.json({
+              success: true,
+              data: report,
+            });
+          } else {
+            console.log(`Cache expired for "${companyName}" (age: ${ageInDays} days), regenerating...`);
+          }
+        }
+      } catch (cacheError) {
+        console.error('Cache lookup error:', cacheError);
+        // Continue to generate new report
       }
     }
 
     // Generate new analysis
+    console.log(`Generating new report for "${companyName}" (key: ${companyKey})`);
     const report = await analyzeCompany(companyName);
 
+    // Add company key and search count
+    report.companyKey = companyKey;
+    report.searchCount = 1;
+
     // Save to Firestore
-    try {
-      const reportId = await saveReport(report);
-      report.id = reportId;
-      report.company.id = reportId;
-    } catch (saveError) {
-      console.error('Failed to save report to Firestore:', saveError);
-      // Continue without saving - still return the report
+    if (db) {
+      try {
+        const docRef = db.collection('reports').doc(companyKey);
+        const existingDoc = await docRef.get();
+        const existingSearchCount = existingDoc.exists ? (existingDoc.data()?.searchCount || 0) : 0;
+
+        await docRef.set({
+          companyKey: companyKey,
+          company: report.company,
+          analysis: {
+            ...report.analysis,
+            lastUpdated: new Date(),
+          },
+          createdAt: existingDoc.exists
+            ? (existingDoc.data()?.createdAt || new Date())
+            : new Date(),
+          updatedAt: new Date(),
+          searchCount: existingSearchCount + 1,
+          generatedBy: 'ai',
+        });
+
+        report.id = companyKey;
+        report.company.id = companyKey;
+        report.searchCount = existingSearchCount + 1;
+
+        console.log(`Saved report for "${companyName}" to Firestore`);
+      } catch (saveError) {
+        console.error('Failed to save report to Firestore:', saveError);
+        // Continue without saving - still return the report
+      }
+    } else {
+      console.warn('Firestore not initialized - report not cached');
     }
 
     return NextResponse.json({

@@ -184,6 +184,7 @@ Provide comprehensive, factual analysis with sources.`
 
   const report: CompanyReport = {
     id: '', // Will be set by Firestore
+    companyKey: '', // Will be set by API route
     company: {
       id: '', // Will be set by Firestore
       name: parsed.company.name || companyName,
@@ -205,6 +206,7 @@ Provide comprehensive, factual analysis with sources.`
     },
     createdAt: now,
     updatedAt: now,
+    searchCount: 1,
     generatedBy: 'ai',
   };
 

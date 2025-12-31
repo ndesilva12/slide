@@ -1,20 +1,42 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { SearchBar } from '@/components/company/SearchBar';
 import { CompanyReportView } from '@/components/company/CompanyReport';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { Spinner } from '@/components/ui/Spinner';
 import { Card, CardContent } from '@/components/ui/Card';
+import { Button } from '@/components/ui/Button';
 import { CompanyReport } from '@/types';
-import { Search, Shield, Sparkles } from 'lucide-react';
+import { Search, Shield, Sparkles, ArrowLeft } from 'lucide-react';
 
-export default function HomePage() {
+function HomeContent() {
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentReport, setCurrentReport] = useState<CompanyReport | null>(null);
   const [recentSearches, setRecentSearches] = useState<CompanyReport[]>([]);
+
+  // Check for report from Browse page on mount
+  useEffect(() => {
+    const fromBrowse = searchParams.get('fromBrowse');
+    if (fromBrowse === 'true') {
+      const storedReport = sessionStorage.getItem('selectedReport');
+      if (storedReport) {
+        try {
+          const report = JSON.parse(storedReport);
+          setCurrentReport(report);
+          sessionStorage.removeItem('selectedReport');
+          // Clean up URL
+          window.history.replaceState({}, '', '/');
+        } catch (e) {
+          console.error('Failed to parse stored report:', e);
+        }
+      }
+    }
+  }, [searchParams]);
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -44,6 +66,11 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleClearReport = () => {
+    setCurrentReport(null);
+    setError(null);
   };
 
   return (
@@ -100,6 +127,12 @@ export default function HomePage() {
         {/* Current Report */}
         {currentReport && !isLoading && (
           <div className="mt-8">
+            <div className="mb-4">
+              <Button variant="ghost" onClick={handleClearReport}>
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                New Search
+              </Button>
+            </div>
             <CompanyReportView report={currentReport} />
           </div>
         )}
@@ -165,5 +198,19 @@ export default function HomePage() {
         )}
       </div>
     </MainLayout>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <Spinner size="lg" />
+        </div>
+      </MainLayout>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

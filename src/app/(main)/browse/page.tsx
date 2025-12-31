@@ -1,14 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { CompanyCard } from '@/components/company/CompanyCard';
 import { LoadingScreen } from '@/components/ui/Spinner';
-import { Badge } from '@/components/ui/Badge';
+import { Button } from '@/components/ui/Button';
 import { CompanyReport } from '@/types';
-import { Search, Filter, TrendingUp } from 'lucide-react';
+import { Search, Filter, TrendingUp, Clock, RefreshCw } from 'lucide-react';
 
 const INDUSTRIES = [
   'All',
@@ -32,85 +33,37 @@ const LEANINGS = [
 ];
 
 export default function BrowsePage() {
+  const router = useRouter();
   const [reports, setReports] = useState<CompanyReport[]>([]);
   const [filteredReports, setFilteredReports] = useState<CompanyReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState('All');
   const [selectedLeaning, setSelectedLeaning] = useState('All');
+  const [sortBy, setSortBy] = useState<'popular' | 'recent'>('popular');
 
   useEffect(() => {
-    loadRecentReports();
-  }, []);
+    loadReports();
+  }, [sortBy]);
 
   useEffect(() => {
     filterReports();
   }, [reports, searchQuery, selectedIndustry, selectedLeaning]);
 
-  const loadRecentReports = async () => {
+  const loadReports = async () => {
     setIsLoading(true);
     try {
-      // For demo purposes, we'll show some sample data
-      // In production, this would fetch from Firestore
-      const sampleReports: CompanyReport[] = [
-        {
-          id: '1',
-          company: { id: '1', name: 'Apple Inc.', ticker: 'AAPL', industry: 'Technology' },
-          analysis: {
-            overallLeaning: 'Center-Left',
-            confidenceScore: 75,
-            summary: 'Apple has historically supported progressive causes and Democratic candidates.',
-            donations: [],
-            publicStatements: [],
-            partnerships: [],
-            keyTopics: ['Privacy', 'Environment', 'Immigration'],
-            lastUpdated: new Date(),
-            sources: [],
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          generatedBy: 'cache',
-        },
-        {
-          id: '2',
-          company: { id: '2', name: 'Walmart', ticker: 'WMT', industry: 'Retail' },
-          analysis: {
-            overallLeaning: 'Center-Right',
-            confidenceScore: 70,
-            summary: 'Walmart has a mixed political donation history with slight conservative lean.',
-            donations: [],
-            publicStatements: [],
-            partnerships: [],
-            keyTopics: ['Labor', 'Trade', 'Healthcare'],
-            lastUpdated: new Date(),
-            sources: [],
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          generatedBy: 'cache',
-        },
-        {
-          id: '3',
-          company: { id: '3', name: 'JPMorgan Chase', ticker: 'JPM', industry: 'Finance' },
-          analysis: {
-            overallLeaning: 'Center',
-            confidenceScore: 80,
-            summary: 'JPMorgan donates to both parties and focuses on financial regulation issues.',
-            donations: [],
-            publicStatements: [],
-            partnerships: [],
-            keyTopics: ['Financial Regulation', 'Economy', 'Climate'],
-            lastUpdated: new Date(),
-            sources: [],
-          },
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          generatedBy: 'cache',
-        },
-      ];
-      setReports(sampleReports);
+      const response = await fetch(`/api/browse?sort=${sortBy}&limit=50`);
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        setReports(data.data);
+      } else {
+        setReports([]);
+      }
     } catch (error) {
       console.error('Failed to load reports:', error);
+      setReports([]);
     } finally {
       setIsLoading(false);
     }
@@ -141,8 +94,9 @@ export default function BrowsePage() {
   };
 
   const handleCompanyClick = (report: CompanyReport) => {
-    // Navigate to company detail page or open modal
-    window.location.href = `/?company=${encodeURIComponent(report.company.name)}`;
+    // Store the report in sessionStorage so the home page can display it
+    sessionStorage.setItem('selectedReport', JSON.stringify(report));
+    router.push('/?fromBrowse=true');
   };
 
   if (isLoading) {
@@ -162,7 +116,7 @@ export default function BrowsePage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div className="flex-1">
                 <Input
-                  placeholder="Search companies..."
+                  placeholder="Filter companies..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   icon={<Search className="h-4 w-4" />}
@@ -196,47 +150,82 @@ export default function BrowsePage() {
                     </option>
                   ))}
                 </select>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => loadReports()}
+                  className="p-2"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Results */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-              {filteredReports.length} Companies
-            </h2>
-            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
-              <TrendingUp className="h-4 w-4" />
-              <span>Recently analyzed</span>
-            </div>
+        {/* Sort Toggle */}
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            {filteredReports.length} {filteredReports.length === 1 ? 'Company' : 'Companies'}
+          </h2>
+          <div className="flex items-center gap-2">
+            <Button
+              variant={sortBy === 'popular' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setSortBy('popular')}
+            >
+              <TrendingUp className="h-4 w-4 mr-1" />
+              Most Searched
+            </Button>
+            <Button
+              variant={sortBy === 'recent' ? 'primary' : 'ghost'}
+              size="sm"
+              onClick={() => setSortBy('recent')}
+            >
+              <Clock className="h-4 w-4 mr-1" />
+              Recent
+            </Button>
           </div>
+        </div>
 
-          {filteredReports.length === 0 ? (
-            <Card>
-              <CardContent className="p-12 text-center">
-                <Search className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  No companies found
-                </h3>
-                <p className="text-gray-500 dark:text-gray-400">
-                  Try adjusting your search or filters, or search for a new company on the home page.
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredReports.map((report) => (
+        {/* Results */}
+        {filteredReports.length === 0 ? (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <Search className="h-12 w-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                {reports.length === 0 ? 'No companies analyzed yet' : 'No companies match your filters'}
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                {reports.length === 0
+                  ? 'Search for a company on the home page to start building your database.'
+                  : 'Try adjusting your search or filters.'}
+              </p>
+              {reports.length === 0 && (
+                <Button onClick={() => router.push('/')}>
+                  Search Companies
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredReports.map((report) => (
+              <div key={report.id} className="relative">
                 <CompanyCard
-                  key={report.id}
                   report={report}
                   onClick={() => handleCompanyClick(report)}
                 />
-              ))}
-            </div>
-          )}
-        </div>
+                {report.searchCount > 1 && (
+                  <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                    {report.searchCount} searches
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </MainLayout>
   );

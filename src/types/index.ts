@@ -58,10 +58,12 @@ export interface PoliticalAnalysis {
 
 export interface CompanyReport {
   id: string;
+  companyKey: string; // Normalized company name for matching
   company: Company;
   analysis: PoliticalAnalysis;
   createdAt: Date;
   updatedAt: Date;
+  searchCount: number; // Track popularity
   generatedBy: 'ai' | 'cache';
 }
 
