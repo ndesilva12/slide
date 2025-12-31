@@ -29,7 +29,7 @@ async function callXAI(messages: { role: string; content: string }[]): Promise<s
       'Authorization': `Bearer ${config.apiKey}`,
     },
     body: JSON.stringify({
-      model: 'grok-beta',
+      model: 'grok-3',
       messages,
       temperature: 0.7,
       max_tokens: 4096,
