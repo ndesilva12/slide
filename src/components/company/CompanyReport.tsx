@@ -102,62 +102,77 @@ export function CompanyReportView({ report }: CompanyReportProps) {
       {/* Company Header */}
       <Card>
         <CardContent className="p-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start space-x-4">
-              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center">
-                {company.logoUrl ? (
-                  <img src={company.logoUrl} alt={company.name} className="w-10 h-10 object-contain" />
-                ) : (
-                  <Building2 className="w-8 h-8 text-gray-400" />
-                )}
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{company.name}</h1>
-                <div className="flex items-center space-x-3 mt-1">
-                  {company.ticker && (
-                    <span className="text-gray-500 dark:text-gray-400">{company.ticker}</span>
-                  )}
-                  {company.industry && (
-                    <Badge variant="default">{company.industry}</Badge>
+          <div className="flex flex-col md:flex-row items-start justify-between gap-6">
+            {/* Left side - Company info and actions */}
+            <div className="flex-1">
+              <div className="flex items-start space-x-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-2xl flex items-center justify-center flex-shrink-0">
+                  {company.logoUrl ? (
+                    <img src={company.logoUrl} alt={company.name} className="w-10 h-10 object-contain" />
+                  ) : (
+                    <Building2 className="w-8 h-8 text-gray-400" />
                   )}
                 </div>
-                {company.description && (
-                  <p className="mt-2 text-gray-600 dark:text-gray-300 max-w-2xl">
-                    {company.description}
-                  </p>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{company.name}</h1>
+                    <PoliticalLeaningBadge leaning={analysis.overallLeaning} />
+                  </div>
+                  <div className="flex items-center space-x-3 mt-1">
+                    {company.ticker && (
+                      <span className="text-gray-500 dark:text-gray-400">{company.ticker}</span>
+                    )}
+                    {company.industry && (
+                      <Badge variant="default">{company.industry}</Badge>
+                    )}
+                  </div>
+                  {company.description && (
+                    <p className="mt-2 text-gray-600 dark:text-gray-300">
+                      {company.description}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex items-center gap-3 mt-4 flex-wrap">
+                {user && (
+                  <>
+                    <Button
+                      variant={inSupport ? 'primary' : 'outline'}
+                      onClick={() => handleListAction('support')}
+                      className={inSupport ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-500 hover:text-green-600'}
+                    >
+                      {inSupport ? <Check className="h-4 w-4 mr-2" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
+                      {inSupport ? 'Supporting' : 'Support'}
+                    </Button>
+                    <Button
+                      variant={inOppose ? 'primary' : 'outline'}
+                      onClick={() => handleListAction('oppose')}
+                      className={inOppose ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-500 hover:text-red-600'}
+                    >
+                      {inOppose ? <Check className="h-4 w-4 mr-2" /> : <ThumbsDown className="h-4 w-4 mr-2" />}
+                      {inOppose ? 'Opposing' : 'Oppose'}
+                    </Button>
+                  </>
+                )}
+                {company.website && (
+                  <a href={company.website} target="_blank" rel="noopener noreferrer">
+                    <Button variant="ghost">
+                      <ExternalLink className="h-4 w-4 mr-1" />
+                      Website
+                    </Button>
+                  </a>
                 )}
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
-              {user && (
-                <>
-                  <Button
-                    variant={inSupport ? 'primary' : 'outline'}
-                    onClick={() => handleListAction('support')}
-                    className={inSupport ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-500 hover:text-green-600'}
-                  >
-                    {inSupport ? <Check className="h-4 w-4 mr-2" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
-                    {inSupport ? 'Supporting' : 'Support'}
-                  </Button>
-                  <Button
-                    variant={inOppose ? 'primary' : 'outline'}
-                    onClick={() => handleListAction('oppose')}
-                    className={inOppose ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-500 hover:text-red-600'}
-                  >
-                    {inOppose ? <Check className="h-4 w-4 mr-2" /> : <ThumbsDown className="h-4 w-4 mr-2" />}
-                    {inOppose ? 'Opposing' : 'Oppose'}
-                  </Button>
-                </>
-              )}
-              {company.website && (
-                <a href={company.website} target="_blank" rel="noopener noreferrer">
-                  <Button variant="ghost">
-                    <ExternalLink className="h-4 w-4" />
-                  </Button>
-                </a>
-              )}
-            </div>
+            {/* Right side - Political Compass */}
+            {analysis.politicalCompass && (
+              <div className="flex-shrink-0 self-center">
+                <PoliticalCompass compass={analysis.politicalCompass} size="lg" />
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -167,17 +182,9 @@ export function CompanyReportView({ report }: CompanyReportProps) {
         <CardContent className="p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Political Analysis</h2>
-            <PoliticalLeaningBadge leaning={analysis.overallLeaning} />
           </div>
 
-          <div className="flex flex-col md:flex-row gap-6 mb-4">
-            <p className="text-gray-700 dark:text-gray-300 flex-1">{analysis.summary}</p>
-            {analysis.politicalCompass && (
-              <div className="flex-shrink-0">
-                <PoliticalCompass compass={analysis.politicalCompass} size="sm" />
-              </div>
-            )}
-          </div>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">{analysis.summary}</p>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">

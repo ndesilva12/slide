@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Library, User, LogOut } from 'lucide-react';
+import { Home, Search, Library, User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
@@ -23,10 +23,10 @@ export function Navigation() {
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}
           <Link href="/" className="hidden md:flex items-center space-x-2">
-            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">P</span>
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-red-500 rounded-lg flex items-center justify-center">
+              <Scale className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">PolitiTrack</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">Scale</span>
           </Link>
 
           {/* Navigation Items */}

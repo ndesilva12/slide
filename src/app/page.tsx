@@ -170,8 +170,11 @@ function HomeContent() {
       <div className="space-y-6">
         {/* Search Bar - Always visible at top */}
         <div className="text-center pt-4">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Discover Company Politics
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+            Discover Company{' '}
+            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 bg-clip-text text-transparent">
+              Politics
+            </span>
           </h1>
           <p className="text-gray-500 dark:text-gray-400 mb-6">
             Search for any company to see their political affiliations, donations, and positions

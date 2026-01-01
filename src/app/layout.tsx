@@ -4,7 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { UserListsProvider } from '@/contexts/UserListsContext';
 
 export const metadata: Metadata = {
-  title: 'PolitiTrack - Company Political Analysis',
+  title: 'Scale - Company Political Analysis',
   description: 'Discover the political affiliations, donations, and positions of companies based on public records and news.',
 };
 
