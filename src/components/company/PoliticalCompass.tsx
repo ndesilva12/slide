@@ -37,19 +37,15 @@ export function PoliticalCompass({
   };
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="relative">
+      {/* Coordinates display - top left outside the compass */}
+      <div className={`absolute -top-5 left-0 ${labelSizes[size]} text-gray-400 dark:text-gray-500`}>
+        ({compass.x.toFixed(1)}, {compass.y.toFixed(1)})
+      </div>
+
       <div className={`${sizeClasses[size]} relative`}>
-        {/* Background quadrants */}
-        <div className="absolute inset-0 grid grid-cols-2 grid-rows-2">
-          {/* Top-left: Left + Freedom (Libertarian Left) */}
-          <div className="bg-green-100 dark:bg-green-900/30 rounded-tl-lg" />
-          {/* Top-right: Right + Freedom (Libertarian Right) */}
-          <div className="bg-purple-100 dark:bg-purple-900/30 rounded-tr-lg" />
-          {/* Bottom-left: Left + Safety (Authoritarian Left) */}
-          <div className="bg-red-100 dark:bg-red-900/30 rounded-bl-lg" />
-          {/* Bottom-right: Right + Safety (Authoritarian Right) */}
-          <div className="bg-blue-100 dark:bg-blue-900/30 rounded-br-lg" />
-        </div>
+        {/* Light purple gradient background */}
+        <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-purple-50 via-purple-100/50 to-purple-50 dark:from-purple-900/20 dark:via-purple-800/15 dark:to-purple-900/20" />
 
         {/* Axis lines */}
         <div className="absolute inset-0">
@@ -68,32 +64,27 @@ export function PoliticalCompass({
           }}
         />
 
-        {/* Axis labels */}
+        {/* Axis labels - inside the box */}
         {showLabels && (
           <>
-            {/* Freedom (top) */}
-            <span className={`absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full pb-0.5 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
+            {/* Freedom (top center, inside) */}
+            <span className={`absolute top-1 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
               Freedom
             </span>
-            {/* Safety (bottom) */}
-            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full pt-0.5 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
+            {/* Safety (bottom center, inside) */}
+            <span className={`absolute bottom-1 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
               Safety
             </span>
-            {/* Left */}
-            <span className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-full pr-1 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
-              Left
+            {/* Left (left center, inside) */}
+            <span className={`absolute left-1 top-1/2 -translate-y-1/2 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
+              L
             </span>
-            {/* Right */}
-            <span className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-full pl-1 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
-              Right
+            {/* Right (right center, inside) */}
+            <span className={`absolute right-1 top-1/2 -translate-y-1/2 ${labelSizes[size]} text-gray-500 dark:text-gray-400 font-medium`}>
+              R
             </span>
           </>
         )}
-      </div>
-
-      {/* Coordinates display */}
-      <div className={`mt-2 ${labelSizes[size]} text-gray-400 dark:text-gray-500`}>
-        ({compass.x.toFixed(1)}, {compass.y.toFixed(1)})
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import { CompanyReport, PoliticalAnalysis, Company } from '@/types';
+import { resolveCompanyAlias } from './company-utils';
 
 const XAI_API_URL = 'https://api.x.ai/v1/chat/completions';
 const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
@@ -87,32 +88,6 @@ async function callAI(messages: { role: string; content: string }[]): Promise<st
   return callAnthropic(messages);
 }
 
-// Company alias mapping - redirects common names to parent companies
-const COMPANY_ALIASES: Record<string, string> = {
-  'facebook': 'Meta',
-  'instagram': 'Meta',
-  'whatsapp': 'Meta',
-  'google': 'Alphabet',
-  'youtube': 'Alphabet',
-  'gmail': 'Alphabet',
-  'android': 'Alphabet',
-  'twitter': 'X Corp',
-  'aws': 'Amazon',
-  'whole foods': 'Amazon',
-  'linkedin': 'Microsoft',
-  'github': 'Microsoft',
-  'xbox': 'Microsoft',
-  'tiktok': 'ByteDance',
-  'snapchat': 'Snap Inc',
-  'venmo': 'PayPal',
-  'cash app': 'Block Inc',
-  'square': 'Block Inc',
-};
-
-function resolveCompanyName(name: string): string {
-  const normalized = name.toLowerCase().trim();
-  return COMPANY_ALIASES[normalized] || name;
-}
 
 const ANALYSIS_PROMPT = `You are a political research analyst. Analyze a company's political affiliations and positions.
 
@@ -150,8 +125,8 @@ Focus on GOVERNANCE policies: taxes, regulations, free speech, trade, government
 Return ONLY valid JSON.`;
 
 export async function analyzeCompany(companyName: string): Promise<CompanyReport> {
-  // Resolve company aliases (e.g., "Facebook" -> "Meta", "Google" -> "Alphabet")
-  const resolvedName = resolveCompanyName(companyName);
+  // Resolve company aliases (e.g., "Facebook" -> "Meta", "Google" -> "Alphabet", "X" -> "X Corp")
+  const resolvedName = resolveCompanyAlias(companyName);
 
   const messages = [
     { role: 'system', content: ANALYSIS_PROMPT },

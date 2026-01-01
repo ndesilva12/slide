@@ -32,6 +32,39 @@ const COMPANY_SUFFIXES = [
   'and',
 ];
 
+// Company alias mapping - redirects common names to parent/current companies
+// This ensures cache consistency when searching for different names of the same company
+const COMPANY_ALIASES: Record<string, string> = {
+  'facebook': 'Meta',
+  'instagram': 'Meta',
+  'whatsapp': 'Meta',
+  'google': 'Alphabet',
+  'youtube': 'Alphabet',
+  'gmail': 'Alphabet',
+  'android': 'Alphabet',
+  'x': 'X Corp',
+  'twitter': 'X Corp',
+  'aws': 'Amazon',
+  'whole foods': 'Amazon',
+  'linkedin': 'Microsoft',
+  'github': 'Microsoft',
+  'xbox': 'Microsoft',
+  'tiktok': 'ByteDance',
+  'snapchat': 'Snap Inc',
+  'venmo': 'PayPal',
+  'cash app': 'Block Inc',
+  'square': 'Block Inc',
+};
+
+/**
+ * Resolve company aliases to their canonical/parent company name
+ * e.g., "facebook" -> "Meta", "twitter" -> "X Corp", "x" -> "X Corp"
+ */
+export function resolveCompanyAlias(name: string): string {
+  const normalized = name.toLowerCase().trim();
+  return COMPANY_ALIASES[normalized] || name;
+}
+
 /**
  * Normalize a company name for database storage and matching.
  * This ensures "Nike", "nike", "Nike Inc.", "NIKE, Inc." all match.
@@ -56,9 +89,12 @@ export function normalizeCompanyName(name: string): string {
 
 /**
  * Create a search key for the company (used as document ID)
+ * First resolves aliases, then normalizes the name
  */
 export function createCompanyKey(name: string): string {
-  const normalized = normalizeCompanyName(name);
+  // First resolve any aliases (twitter -> X Corp, facebook -> Meta)
+  const resolved = resolveCompanyAlias(name);
+  const normalized = normalizeCompanyName(resolved);
   // Replace spaces with underscores for document ID
   return normalized.replace(/\s+/g, '_');
 }
