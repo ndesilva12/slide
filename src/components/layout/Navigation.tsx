@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Search, LayoutGrid, User, LogOut, Plus } from 'lucide-react';
+import { Search, LayoutGrid, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
@@ -12,43 +13,28 @@ const navItems = [
   { href: '/browse', label: 'Browse', icon: LayoutGrid },
 ];
 
-// Simple plus icon with gradient
-function GradientPlusIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      className={className}
-    >
-      <defs>
-        <linearGradient id="plusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor="#3b82f6" />
-          <stop offset="50%" stopColor="#7c3aed" />
-          <stop offset="100%" stopColor="#dc2626" />
-        </linearGradient>
-      </defs>
-      <path
-        fill="url(#plusGradient)"
-        d="M19 11h-6V5a1 1 0 0 0-2 0v6H5a1 1 0 0 0 0 2h6v6a1 1 0 0 0 2 0v-6h6a1 1 0 0 0 0-2z"
-      />
-    </svg>
-  );
-}
-
 export function Navigation() {
   const pathname = usePathname();
   const { user, signOut } = useAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-white dark:bg-gray-900 border-t md:border-b md:border-t-0 border-gray-200 dark:border-gray-700 z-40">
+    <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-white dark:bg-black border-t md:border-b md:border-t-0 border-gray-200 dark:border-gray-800 z-40">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}
-          <Link href="/" className="hidden md:flex items-center space-x-2">
-            <GradientPlusIcon className="h-9 w-9" />
-            <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
-              Scale
-            </span>
+          <Link href="/" className="hidden md:flex items-center">
+            {/* Light theme logo (black text) */}
+            <img
+              src="/scale-light.png"
+              alt="Scale"
+              className="h-8 dark:hidden"
+            />
+            {/* Dark theme logo (white text) */}
+            <img
+              src="/scale-dark.png"
+              alt="Scale"
+              className="h-8 hidden dark:block"
+            />
           </Link>
 
           {/* Navigation Items */}
