@@ -28,8 +28,12 @@ export async function POST(request: NextRequest) {
 
     const { db } = getFirebaseAdmin();
 
+    // Log DB status at the start
+    console.log(`[ANALYZE] Search: "${companyName}", DB initialized: ${!!db}`);
+
     // First, try to find by search term key (for backwards compatibility)
     const searchKey = createCompanyKey(companyName);
+    console.log(`[ANALYZE] Search key: "${searchKey}"`);
 
     // Check cache first using search term key (skip if forceRefresh is true)
     if (db && !forceRefresh) {

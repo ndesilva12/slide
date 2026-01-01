@@ -96,13 +96,32 @@ export function normalizeCompanyName(name: string): string {
 /**
  * Create a search key for the company (used as document ID)
  * First resolves aliases, then normalizes the name
+ * Ensures the key is valid for Firestore document IDs
  */
 export function createCompanyKey(name: string): string {
   // First resolve any aliases (twitter -> X Corp, facebook -> Meta)
   const resolved = resolveCompanyAlias(name);
   const normalized = normalizeCompanyName(resolved);
+
   // Replace spaces with underscores for document ID
-  return normalized.replace(/\s+/g, '_');
+  let key = normalized.replace(/\s+/g, '_');
+
+  // Remove any remaining invalid characters for Firestore document IDs
+  // Only allow alphanumeric, underscores, and hyphens
+  key = key.replace(/[^a-z0-9_-]/g, '');
+
+  // Ensure key is not empty
+  if (!key || key.length === 0) {
+    // Fallback to a sanitized version of the original name
+    key = name.toLowerCase().replace(/[^a-z0-9]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '');
+  }
+
+  // Ensure key is not too long (Firestore limit is 1500 bytes, but let's be safe)
+  if (key.length > 100) {
+    key = key.substring(0, 100);
+  }
+
+  return key;
 }
 
 /**
