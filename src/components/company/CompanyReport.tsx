@@ -14,6 +14,8 @@ import {
   ChevronDown,
   ChevronUp,
   PieChart,
+  Network,
+  Layers,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
@@ -49,6 +51,8 @@ export function CompanyReportView({ report }: CompanyReportProps) {
     donations: true,
     statements: true,
     partnerships: false,
+    subsidiaries: true,
+    affiliates: true,
     revenue: true,
   });
 
@@ -461,6 +465,126 @@ export function CompanyReportView({ report }: CompanyReportProps) {
           </CardContent>
         )}
       </Card>
+
+      {/* Subsidiaries Section */}
+      {analysis.subsidiaries && analysis.subsidiaries.length > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('subsidiaries')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <Layers className="h-5 w-5 text-indigo-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Owned Brands & Subsidiaries
+                </h2>
+                <Badge variant="default">{analysis.subsidiaries.length}</Badge>
+              </div>
+              {expandedSections.subsidiaries ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.subsidiaries && (
+            <CardContent className="p-6 pt-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Companies, brands, and divisions owned by {company.name}
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {analysis.subsidiaries.map((subsidiary, i) => (
+                  <div
+                    key={i}
+                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {subsidiary.name}
+                      </p>
+                      <Badge variant="default" size="sm">
+                        {subsidiary.type}
+                      </Badge>
+                    </div>
+                    {subsidiary.ownershipPercent && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        {subsidiary.ownershipPercent}% ownership
+                      </p>
+                    )}
+                    {subsidiary.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {subsidiary.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {/* Affiliates Section */}
+      {analysis.affiliates && analysis.affiliates.length > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('affiliates')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <Network className="h-5 w-5 text-teal-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Business Affiliates
+                </h2>
+                <Badge variant="default">{analysis.affiliates.length}</Badge>
+              </div>
+              {expandedSections.affiliates ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.affiliates && (
+            <CardContent className="p-6 pt-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Partners, investors, and business relationships
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {analysis.affiliates.map((affiliate, i) => (
+                  <div
+                    key={i}
+                    className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="font-medium text-gray-900 dark:text-white">
+                        {affiliate.name}
+                      </p>
+                      <Badge variant="default" size="sm">
+                        {affiliate.relationshipType.replace('_', ' ')}
+                      </Badge>
+                    </div>
+                    {affiliate.ownershipPercent && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">
+                        {affiliate.ownershipPercent}% stake
+                      </p>
+                    )}
+                    {affiliate.description && (
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {affiliate.description}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Revenue Breakdown Section */}
       {analysis.revenueBreakdown && (

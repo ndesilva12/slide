@@ -13,7 +13,8 @@ const CACHE_EXPIRY_DAYS = 30;
 // v3: Simplified prompt for reliability, added company aliases
 // v4: Force refresh for X Corp (was showing old Twitter Inc data)
 // v5: Use official company name from AI for cache key
-const REPORT_SCHEMA_VERSION = 5;
+// v6: Added subsidiaries and affiliates sections
+const REPORT_SCHEMA_VERSION = 6;
 
 /**
  * Sanitize data for Firestore - remove undefined values and convert invalid types

@@ -108,6 +108,8 @@ Return a JSON object with this structure (all arrays can be empty if no data ava
     "donations": [],
     "publicStatements": [],
     "partnerships": [],
+    "subsidiaries": [],
+    "affiliates": [],
     "revenueBreakdown": null,
     "keyTopics": [],
     "sources": []
@@ -119,6 +121,8 @@ Field details:
 - donations: Include PAC, executive, and employee donations if known. Each: {recipient, party, amount, year, donorType, source}
 - publicStatements: Leadership statements on policy. Each: {date, speaker, role, statement, topic, source, url}
 - partnerships: Political orgs/trade associations. Each: {partnerName, partnerType, politicalLeaning, relevance}
+- subsidiaries: Owned brands, companies, or divisions. Each: {name, type: "subsidiary"|"brand"|"division", description, ownershipPercent}. Include major owned entities.
+- affiliates: Business partners, investors, joint ventures, suppliers, distributors, licensees, or collaborations. Each: {name, relationshipType: "partner"|"investor"|"joint_venture"|"supplier"|"distributor"|"licensee"|"collaboration", description, ownershipPercent}. Include notable business relationships.
 - revenueBreakdown: If available from SEC filings, include percentages for executiveCompensation, employeeWages, operatingExpenses, researchAndDevelopment, marketing, stockBuybacks, dividends, capitalExpenditures, charitableDonations, lobbyingAndPolitical, netProfit, source, fiscalYear. Otherwise null.
 
 Focus on GOVERNANCE policies: taxes, regulations, free speech, trade, government spending.
@@ -183,6 +187,8 @@ Include political donations (PAC, executive, employee), public statements on gov
       donations: Array.isArray(parsed.analysis?.donations) ? parsed.analysis.donations : [],
       publicStatements: Array.isArray(parsed.analysis?.publicStatements) ? parsed.analysis.publicStatements : [],
       partnerships: Array.isArray(parsed.analysis?.partnerships) ? parsed.analysis.partnerships : [],
+      subsidiaries: Array.isArray(parsed.analysis?.subsidiaries) ? parsed.analysis.subsidiaries : [],
+      affiliates: Array.isArray(parsed.analysis?.affiliates) ? parsed.analysis.affiliates : [],
       revenueBreakdown: parsed.analysis?.revenueBreakdown || undefined,
       keyTopics: Array.isArray(parsed.analysis?.keyTopics) ? parsed.analysis.keyTopics : [],
       lastUpdated: now,

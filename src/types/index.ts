@@ -62,6 +62,22 @@ export interface Partnership {
   relevance: string;
 }
 
+// Subsidiary or owned brand
+export interface Subsidiary {
+  name: string;
+  type: 'subsidiary' | 'brand' | 'division';
+  description?: string;
+  ownershipPercent?: number; // 100 = fully owned
+}
+
+// Affiliated company through partnerships, collaborations, or ownership stake
+export interface Affiliate {
+  name: string;
+  relationshipType: 'partner' | 'investor' | 'joint_venture' | 'supplier' | 'distributor' | 'licensee' | 'collaboration';
+  description?: string;
+  ownershipPercent?: number; // for minority stakes
+}
+
 // Political compass coordinates
 // x: -2 (Left) to +2 (Right)
 // y: -2 (Safety/Authoritarian) to +2 (Freedom/Libertarian)
@@ -78,6 +94,8 @@ export interface PoliticalAnalysis {
   donations: PoliticalDonation[];
   publicStatements: PublicStatement[];
   partnerships: Partnership[];
+  subsidiaries?: Subsidiary[]; // Owned brands, companies, divisions
+  affiliates?: Affiliate[]; // Business partners, collaborators, minority stakes
   revenueBreakdown?: RevenueBreakdown;
   keyTopics: string[];
   lastUpdated: Date;
