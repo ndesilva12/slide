@@ -53,7 +53,7 @@ export default function BrowsePage() {
   const loadReports = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/browse?sort=${sortBy}&limit=100`);
+      const response = await fetch(`/api/browse?sort=${sortBy}&limit=25`);
       const data = await response.json();
 
       if (data.success && data.data) {

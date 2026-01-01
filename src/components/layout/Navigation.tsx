@@ -22,18 +22,18 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}
-          <Link href="/" className="hidden md:flex items-center">
+          <Link href="/" className="hidden md:flex items-center h-full py-2">
             {/* Light theme logo (black text) */}
             <img
               src="/scale-light.png"
               alt="Scale"
-              className="h-8 dark:hidden"
+              className="h-full max-h-12 dark:hidden"
             />
             {/* Dark theme logo (white text) */}
             <img
               src="/scale-dark.png"
               alt="Scale"
-              className="h-8 hidden dark:block"
+              className="h-full max-h-12 hidden dark:block"
             />
           </Link>
 
