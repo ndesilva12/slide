@@ -134,6 +134,17 @@ function HomeContent() {
     setIsLoading(true);
     setLoadingMessage('Loading report...');
     try {
+      // First, try to fetch cached report by companyKey (fast, no regeneration)
+      if (item.companyKey) {
+        const cacheResponse = await fetch(`/api/report/${encodeURIComponent(item.companyKey)}`);
+        const cacheData = await cacheResponse.json();
+        if (cacheData.success) {
+          setCurrentReport(cacheData.data);
+          return;
+        }
+      }
+
+      // Fallback: use analyze endpoint if no cached report found
       const response = await fetch('/api/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
