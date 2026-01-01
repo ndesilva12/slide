@@ -24,7 +24,25 @@ export interface PoliticalDonation {
   party: 'Republican' | 'Democrat' | 'Independent' | 'Other';
   amount: number;
   year: number;
+  donorType: 'Corporate PAC' | 'Executive' | 'Employee' | 'Other';
   source: string;
+}
+
+export interface RevenueBreakdown {
+  executiveCompensation?: number; // percentage
+  employeeWages?: number;
+  operatingExpenses?: number;
+  researchAndDevelopment?: number;
+  marketing?: number;
+  stockBuybacks?: number;
+  dividends?: number;
+  capitalExpenditures?: number;
+  charitableDonations?: number;
+  lobbyingAndPolitical?: number;
+  netProfit?: number;
+  other?: number;
+  source?: string;
+  fiscalYear?: number;
 }
 
 export interface PublicStatement {
@@ -51,6 +69,7 @@ export interface PoliticalAnalysis {
   donations: PoliticalDonation[];
   publicStatements: PublicStatement[];
   partnerships: Partnership[];
+  revenueBreakdown?: RevenueBreakdown;
   keyTopics: string[];
   lastUpdated: Date;
   sources: string[];

@@ -13,6 +13,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  PieChart,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
@@ -47,6 +48,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
     donations: true,
     statements: true,
     partnerships: false,
+    revenue: true,
   });
 
   const toggleSection = (section: string) => {
@@ -70,6 +72,29 @@ export function CompanyReportView({ report }: CompanyReportProps) {
     },
     {} as Record<string, number>
   );
+  const donorTypeBreakdown = analysis.donations.reduce(
+    (acc, d) => {
+      const type = d.donorType || 'Other';
+      acc[type] = (acc[type] || 0) + d.amount;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
+
+  const revenueLabels: Record<string, string> = {
+    executiveCompensation: 'Executive Compensation',
+    employeeWages: 'Employee Wages & Benefits',
+    operatingExpenses: 'Operating Expenses',
+    researchAndDevelopment: 'Research & Development',
+    marketing: 'Marketing & Advertising',
+    stockBuybacks: 'Stock Buybacks',
+    dividends: 'Dividends',
+    capitalExpenditures: 'Capital Expenditures',
+    charitableDonations: 'Charitable Donations',
+    lobbyingAndPolitical: 'Lobbying & Political',
+    netProfit: 'Net Profit Retained',
+    other: 'Other',
+  };
 
   return (
     <div className="space-y-6">
@@ -226,20 +251,40 @@ export function CompanyReportView({ report }: CompanyReportProps) {
 
         {expandedSections.donations && (
           <CardContent className="p-6 pt-0">
-            {/* Party breakdown */}
-            <div className="mb-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
-              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
-                Donation Breakdown by Party
-              </h3>
-              <div className="space-y-2">
-                {Object.entries(partyBreakdown).map(([party, amount]) => (
-                  <div key={party} className="flex items-center justify-between">
-                    <span className="text-gray-700 dark:text-gray-300">{party}</span>
-                    <span className="font-medium text-gray-900 dark:text-white">
-                      {formatCurrency(amount)}
-                    </span>
-                  </div>
-                ))}
+            {/* Breakdowns */}
+            <div className="grid md:grid-cols-2 gap-4 mb-4">
+              {/* Party breakdown */}
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                  By Party
+                </h3>
+                <div className="space-y-2">
+                  {Object.entries(partyBreakdown).map(([party, amount]) => (
+                    <div key={party} className="flex items-center justify-between">
+                      <span className="text-gray-700 dark:text-gray-300">{party}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatCurrency(amount)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Donor type breakdown */}
+              <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl">
+                <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+                  By Source
+                </h3>
+                <div className="space-y-2">
+                  {Object.entries(donorTypeBreakdown).map(([type, amount]) => (
+                    <div key={type} className="flex items-center justify-between">
+                      <span className="text-gray-700 dark:text-gray-300">{type}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {formatCurrency(amount)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -252,7 +297,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                 >
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{donation.recipient}</p>
-                    <div className="flex items-center space-x-2 mt-1">
+                    <div className="flex items-center flex-wrap gap-2 mt-1">
                       <Badge
                         variant={
                           donation.party === 'Democrat'
@@ -265,6 +310,11 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                       >
                         {donation.party}
                       </Badge>
+                      {donation.donorType && (
+                        <Badge variant="default" size="sm">
+                          {donation.donorType}
+                        </Badge>
+                      )}
                       <span className="text-sm text-gray-500 dark:text-gray-400">{donation.year}</span>
                     </div>
                   </div>
@@ -392,6 +442,71 @@ export function CompanyReportView({ report }: CompanyReportProps) {
           </CardContent>
         )}
       </Card>
+
+      {/* Revenue Breakdown Section */}
+      {analysis.revenueBreakdown && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('revenue')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <PieChart className="h-5 w-5 text-amber-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Revenue Allocation
+                </h2>
+              </div>
+              {expandedSections.revenue ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.revenue && (
+            <CardContent className="p-6 pt-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Where does the company&apos;s money go? (as % of revenue)
+              </p>
+              <div className="space-y-3">
+                {Object.entries(analysis.revenueBreakdown)
+                  .filter(([key, value]) =>
+                    typeof value === 'number' &&
+                    value > 0 &&
+                    key !== 'fiscalYear'
+                  )
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm text-gray-700 dark:text-gray-300">
+                          {revenueLabels[key] || key}
+                        </span>
+                        <span className="text-sm font-medium text-gray-900 dark:text-white">
+                          {value}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-amber-500 h-2 rounded-full transition-all"
+                          style={{ width: `${Math.min(value as number, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              {analysis.revenueBreakdown.source && (
+                <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
+                  Source: {analysis.revenueBreakdown.source}
+                  {analysis.revenueBreakdown.fiscalYear && ` (FY${analysis.revenueBreakdown.fiscalYear})`}
+                </p>
+              )}
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Sources */}
       {analysis.sources.length > 0 && (

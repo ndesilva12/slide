@@ -212,17 +212,11 @@ export default function BrowsePage() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredReports.map((report) => (
-              <div key={report.id} className="relative">
-                <CompanyCard
-                  report={report}
-                  onClick={() => handleCompanyClick(report)}
-                />
-                {report.searchCount > 1 && (
-                  <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
-                    {report.searchCount} searches
-                  </div>
-                )}
-              </div>
+              <CompanyCard
+                key={report.id}
+                report={report}
+                onClick={() => handleCompanyClick(report)}
+              />
             ))}
           </div>
         )}

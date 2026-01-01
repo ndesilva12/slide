@@ -87,7 +87,7 @@ async function callAI(messages: { role: string; content: string }[]): Promise<st
   return callAnthropic(messages);
 }
 
-const ANALYSIS_PROMPT = `You are a political research analyst. Your task is to analyze a company's political affiliations, donations, and public positions.
+const ANALYSIS_PROMPT = `You are a political research analyst. Your task is to analyze a company's political affiliations, donations, positions, and financial allocation.
 
 For the given company, provide a comprehensive analysis in JSON format with the following structure:
 {
@@ -108,6 +108,7 @@ For the given company, provide a comprehensive analysis in JSON format with the 
         "party": "Republican" | "Democrat" | "Independent" | "Other",
         "amount": 10000,
         "year": 2024,
+        "donorType": "Corporate PAC" | "Executive" | "Employee" | "Other",
         "source": "FEC records / OpenSecrets / etc."
       }
     ],
@@ -130,6 +131,21 @@ For the given company, provide a comprehensive analysis in JSON format with the 
         "relevance": "Why this partnership matters politically"
       }
     ],
+    "revenueBreakdown": {
+      "executiveCompensation": 5,
+      "employeeWages": 30,
+      "operatingExpenses": 20,
+      "researchAndDevelopment": 15,
+      "marketing": 10,
+      "stockBuybacks": 5,
+      "dividends": 3,
+      "capitalExpenditures": 5,
+      "charitableDonations": 1,
+      "lobbyingAndPolitical": 0.5,
+      "netProfit": 5.5,
+      "source": "Annual report / SEC filings",
+      "fiscalYear": 2024
+    },
     "keyTopics": ["Topic 1", "Topic 2"],
     "sources": ["Source 1", "Source 2"]
   }
@@ -137,11 +153,45 @@ For the given company, provide a comprehensive analysis in JSON format with the 
 
 Guidelines:
 1. Be factual and cite sources where possible
-2. Include both corporate PAC donations and donations from leadership
-3. Look for public statements on political issues like climate, immigration, LGBTQ+ rights, gun control, etc.
-4. Consider lobbying activities and trade association memberships
-5. If information is limited, acknowledge uncertainty with a lower confidence score
-6. Always include the source of information
+
+2. DONATIONS - Include political donations from ALL sources:
+   - Corporate PAC donations
+   - Executive and leadership donations
+   - Employee donations (aggregate when available from FEC/OpenSecrets)
+   - Mark each donation with the appropriate donorType
+
+3. POLITICAL TOPICS - Focus primarily on GOVERNANCE policies:
+   - Taxes and tax policy (corporate tax rates, tax incentives, offshore policies)
+   - Regulations and regulatory policy (support/opposition to industry regulation)
+   - Freedom of speech and censorship (content moderation, platform policies)
+   - Foreign policy (trade deals, tariffs, international relations)
+   - Government spending and fiscal policy
+   - Privacy vs security tradeoffs
+   - Free market vs protectionism
+   - Monetary policy positions
+
+   Secondary consideration for social issues:
+   - Climate and environmental policy
+   - Labor and workplace policies
+   - Healthcare policy
+   - Immigration policy
+
+4. REVENUE BREAKDOWN - Show where company money goes as percentages:
+   - Executive compensation (C-suite, board)
+   - Employee wages and benefits
+   - Operating expenses
+   - R&D investment
+   - Marketing and advertising
+   - Stock buybacks and dividends
+   - Capital expenditures
+   - Charitable donations
+   - Lobbying and political spending
+   - Net profit retained
+   Use data from annual reports, 10-K filings, or proxy statements. Estimate if exact data unavailable.
+
+5. Consider lobbying activities and trade association memberships
+6. If information is limited, acknowledge uncertainty with a lower confidence score
+7. Always include the source of information
 
 Return ONLY valid JSON, no additional text.`;
 
@@ -150,16 +200,17 @@ export async function analyzeCompany(companyName: string): Promise<CompanyReport
     { role: 'system', content: ANALYSIS_PROMPT },
     {
       role: 'user',
-      content: `Analyze the political affiliations, donations, and positions of: ${companyName}
+      content: `Analyze the political affiliations, donations, positions, and financial allocation of: ${companyName}
 
 Please search for and include:
-1. Political donations from the company's PAC and executives (check FEC records, OpenSecrets)
-2. Public statements from company leadership on political issues
+1. Political donations from the company's PAC, executives, AND employees (check FEC records, OpenSecrets)
+2. Public statements on GOVERNANCE issues: taxes, regulations, free speech, censorship, foreign policy, trade, government spending
 3. Lobbying activities and political advocacy
 4. Partnerships with politically-aligned organizations
-5. Any controversies or notable political positions
+5. Revenue/expense breakdown: where does the company's money go? (executive pay, wages, R&D, buybacks, lobbying, etc.)
+6. Any notable positions on regulatory, fiscal, or trade policy
 
-Provide comprehensive, factual analysis with sources.`
+Focus on governance and policy positions over social issues. Provide comprehensive, factual analysis with sources.`
     },
   ];
 
@@ -200,6 +251,7 @@ Provide comprehensive, factual analysis with sources.`
       donations: parsed.analysis.donations || [],
       publicStatements: parsed.analysis.publicStatements || [],
       partnerships: parsed.analysis.partnerships || [],
+      revenueBreakdown: parsed.analysis.revenueBreakdown || undefined,
       keyTopics: parsed.analysis.keyTopics || [],
       lastUpdated: now,
       sources: parsed.analysis.sources || [],
