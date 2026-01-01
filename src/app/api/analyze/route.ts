@@ -7,6 +7,11 @@ import { CompanyReport } from '@/types';
 
 const CACHE_EXPIRY_DAYS = 30;
 
+// Increment this version when report format changes to force cache refresh
+// v1: Initial format
+// v2: Added politicalCompass, revenueBreakdown, donorType, governance focus
+const REPORT_SCHEMA_VERSION = 2;
+
 export async function POST(request: NextRequest) {
   try {
     const { companyName } = await request.json();
@@ -31,8 +36,10 @@ export async function POST(request: NextRequest) {
           const data = docSnap.data();
           const updatedAt = data?.updatedAt?.toDate?.() || new Date(data?.updatedAt);
           const ageInDays = daysSince(updatedAt);
+          const cachedSchemaVersion = data?.schemaVersion || 1;
 
-          if (ageInDays < CACHE_EXPIRY_DAYS) {
+          // Check both cache age AND schema version
+          if (ageInDays < CACHE_EXPIRY_DAYS && cachedSchemaVersion >= REPORT_SCHEMA_VERSION) {
             // Update search count
             await docRef.update({
               searchCount: (data?.searchCount || 0) + 1,
@@ -53,12 +60,14 @@ export async function POST(request: NextRequest) {
               generatedBy: 'cache',
             };
 
-            console.log(`Cache hit for "${companyName}" (key: ${companyKey}), age: ${ageInDays} days`);
+            console.log(`Cache hit for "${companyName}" (key: ${companyKey}), age: ${ageInDays} days, schema: v${cachedSchemaVersion}`);
 
             return NextResponse.json({
               success: true,
               data: report,
             });
+          } else if (cachedSchemaVersion < REPORT_SCHEMA_VERSION) {
+            console.log(`Schema outdated for "${companyName}" (v${cachedSchemaVersion} < v${REPORT_SCHEMA_VERSION}), regenerating...`);
           } else {
             console.log(`Cache expired for "${companyName}" (age: ${ageInDays} days), regenerating...`);
           }
@@ -108,6 +117,7 @@ export async function POST(request: NextRequest) {
           updatedAt: new Date(),
           searchCount: existingSearchCount + 1,
           generatedBy: 'ai',
+          schemaVersion: REPORT_SCHEMA_VERSION,
         });
 
         report.id = companyKey;

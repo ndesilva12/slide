@@ -245,11 +245,18 @@ Focus on governance and policy positions over social issues. Provide comprehensi
     if (jsonMatch) {
       parsed = JSON.parse(jsonMatch[0]);
     } else {
+      console.error('No JSON found in AI response:', response.substring(0, 500));
       throw new Error('No JSON found in response');
     }
   } catch (e) {
-    console.error('Failed to parse AI response:', response);
+    console.error('Failed to parse AI response:', response.substring(0, 500));
     throw new Error('Failed to parse AI analysis response');
+  }
+
+  // Validate parsed structure
+  if (!parsed.company || !parsed.analysis) {
+    console.error('Invalid response structure:', JSON.stringify(parsed).substring(0, 500));
+    throw new Error('Invalid response structure from AI');
   }
 
   const now = new Date();
@@ -259,24 +266,24 @@ Focus on governance and policy positions over social issues. Provide comprehensi
     companyKey: '', // Will be set by API route
     company: {
       id: '', // Will be set by Firestore
-      name: parsed.company.name || companyName,
-      ticker: parsed.company.ticker,
-      industry: parsed.company.industry,
-      description: parsed.company.description,
-      website: parsed.company.website,
+      name: parsed.company?.name || companyName,
+      ticker: parsed.company?.ticker || undefined,
+      industry: parsed.company?.industry || undefined,
+      description: parsed.company?.description || undefined,
+      website: parsed.company?.website || undefined,
     },
     analysis: {
-      overallLeaning: parsed.analysis.overallLeaning || 'Unknown',
-      confidenceScore: parsed.analysis.confidenceScore || 50,
-      summary: parsed.analysis.summary || 'Analysis pending.',
-      politicalCompass: parsed.analysis.politicalCompass || undefined,
-      donations: parsed.analysis.donations || [],
-      publicStatements: parsed.analysis.publicStatements || [],
-      partnerships: parsed.analysis.partnerships || [],
-      revenueBreakdown: parsed.analysis.revenueBreakdown || undefined,
-      keyTopics: parsed.analysis.keyTopics || [],
+      overallLeaning: parsed.analysis?.overallLeaning || 'Unknown',
+      confidenceScore: parsed.analysis?.confidenceScore || 50,
+      summary: parsed.analysis?.summary || 'Analysis pending.',
+      politicalCompass: parsed.analysis?.politicalCompass || undefined,
+      donations: Array.isArray(parsed.analysis?.donations) ? parsed.analysis.donations : [],
+      publicStatements: Array.isArray(parsed.analysis?.publicStatements) ? parsed.analysis.publicStatements : [],
+      partnerships: Array.isArray(parsed.analysis?.partnerships) ? parsed.analysis.partnerships : [],
+      revenueBreakdown: parsed.analysis?.revenueBreakdown || undefined,
+      keyTopics: Array.isArray(parsed.analysis?.keyTopics) ? parsed.analysis.keyTopics : [],
       lastUpdated: now,
-      sources: parsed.analysis.sources || [],
+      sources: Array.isArray(parsed.analysis?.sources) ? parsed.analysis.sources : [],
     },
     createdAt: now,
     updatedAt: now,

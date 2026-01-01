@@ -170,6 +170,12 @@ function HomeContent() {
       <div className="space-y-6">
         {/* Search Bar - Always visible at top */}
         <div className="text-center pt-4">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            Discover Company Politics
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 mb-6">
+            Search for any company to see their political affiliations, donations, and positions
+          </p>
           <div className="max-w-2xl mx-auto">
             <SearchBar
               onSearch={handleSearch}
@@ -223,7 +229,7 @@ function HomeContent() {
         {showRankings && (
           <div className="space-y-6">
             {/* View Toggle */}
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col items-center gap-4">
               <div className="flex items-center gap-2">
                 {user && (
                   <Button
