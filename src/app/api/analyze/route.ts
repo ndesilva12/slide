@@ -12,7 +12,8 @@ const CACHE_EXPIRY_DAYS = 30;
 // v2: Added politicalCompass, revenueBreakdown, donorType, governance focus
 // v3: Simplified prompt for reliability, added company aliases
 // v4: Force refresh for X Corp (was showing old Twitter Inc data)
-const REPORT_SCHEMA_VERSION = 4;
+// v5: Use official company name from AI for cache key
+const REPORT_SCHEMA_VERSION = 5;
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,17 +26,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const companyKey = createCompanyKey(companyName);
     const { db } = getFirebaseAdmin();
 
-    // Check cache first (skip if forceRefresh is true)
-    if (forceRefresh) {
-      console.log(`Force refresh requested for "${companyName}" (key: ${companyKey})`);
-    }
+    // First, try to find by search term key (for backwards compatibility)
+    const searchKey = createCompanyKey(companyName);
 
+    // Check cache first using search term key (skip if forceRefresh is true)
     if (db && !forceRefresh) {
       try {
-        const docRef = db.collection('reports').doc(companyKey);
+        const docRef = db.collection('reports').doc(searchKey);
         const docSnap = await docRef.get();
 
         if (docSnap.exists) {
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
             // Convert Firestore timestamps to dates
             const report: CompanyReport = {
               id: docSnap.id,
-              companyKey: data?.companyKey || companyKey,
+              companyKey: data?.companyKey || searchKey,
               company: data?.company,
               analysis: {
                 ...data?.analysis,
@@ -66,7 +65,7 @@ export async function POST(request: NextRequest) {
               generatedBy: 'cache',
             };
 
-            console.log(`Cache hit for "${companyName}" (key: ${companyKey}), age: ${ageInDays} days, schema: v${cachedSchemaVersion}`);
+            console.log(`Cache hit for "${companyName}" (key: ${searchKey}), age: ${ageInDays} days, schema: v${cachedSchemaVersion}`);
 
             return NextResponse.json({
               success: true,
@@ -85,28 +84,79 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate new analysis
-    console.log(`Generating new report for "${companyName}" (key: ${companyKey})`);
+    console.log(`Generating new report for "${companyName}"`);
     const report = await analyzeCompany(companyName);
 
-    // Add company key and search count
+    // Create company key from the OFFICIAL company name returned by AI
+    const officialName = report.company.name;
+    const companyKey = createCompanyKey(officialName);
+
+    console.log(`AI returned official name: "${officialName}" -> key: "${companyKey}"`);
+
+    // Check if we already have this company under its official name
+    if (db && !forceRefresh && companyKey !== searchKey) {
+      try {
+        const officialDocRef = db.collection('reports').doc(companyKey);
+        const officialDocSnap = await officialDocRef.get();
+
+        if (officialDocSnap.exists) {
+          const data = officialDocSnap.data();
+          const updatedAt = data?.updatedAt?.toDate?.() || new Date(data?.updatedAt);
+          const ageInDays = daysSince(updatedAt);
+          const cachedSchemaVersion = data?.schemaVersion || 1;
+
+          if (ageInDays < CACHE_EXPIRY_DAYS && cachedSchemaVersion >= REPORT_SCHEMA_VERSION) {
+            // Update search count
+            await officialDocRef.update({
+              searchCount: (data?.searchCount || 0) + 1,
+            });
+
+            const cachedReport: CompanyReport = {
+              id: officialDocSnap.id,
+              companyKey: companyKey,
+              company: data?.company,
+              analysis: {
+                ...data?.analysis,
+                lastUpdated: data?.analysis?.lastUpdated?.toDate?.() || new Date(data?.analysis?.lastUpdated),
+              },
+              createdAt: data?.createdAt?.toDate?.() || new Date(data?.createdAt),
+              updatedAt: updatedAt,
+              searchCount: (data?.searchCount || 0) + 1,
+              generatedBy: 'cache',
+            };
+
+            console.log(`Cache hit for official name "${officialName}" (key: ${companyKey})`);
+
+            return NextResponse.json({
+              success: true,
+              data: cachedReport,
+            });
+          }
+        }
+      } catch (err) {
+        console.error('Official name cache lookup error:', err);
+      }
+    }
+
+    // Set the company key on the report
     report.companyKey = companyKey;
     report.searchCount = 1;
 
     // Fetch company logo
     try {
-      const logoUrl = await fetchCompanyLogo(companyName, report.company.website);
+      const logoUrl = await fetchCompanyLogo(officialName, report.company.website);
       if (logoUrl) {
         report.company.logoUrl = logoUrl;
-        console.log(`Found logo for "${companyName}": ${logoUrl}`);
+        console.log(`Found logo for "${officialName}": ${logoUrl}`);
       }
     } catch (logoError) {
       console.error('Failed to fetch logo:', logoError);
     }
 
-    // Save to Firestore
+    // Save to Firestore using the OFFICIAL company name key
     if (db) {
       try {
-        console.log(`Attempting to save report for "${companyName}" with key: ${companyKey}`);
+        console.log(`Saving report for "${officialName}" with key: ${companyKey}`);
         const docRef = db.collection('reports').doc(companyKey);
         const existingDoc = await docRef.get();
         const existingSearchCount = existingDoc.exists ? (existingDoc.data()?.searchCount || 0) : 0;
@@ -133,13 +183,13 @@ export async function POST(request: NextRequest) {
         report.company.id = companyKey;
         report.searchCount = existingSearchCount + 1;
 
-        console.log(`SUCCESS: Saved report for "${companyName}" to Firestore (key: ${companyKey})`);
+        console.log(`SUCCESS: Saved report for "${officialName}" to Firestore (key: ${companyKey})`);
       } catch (saveError) {
-        console.error(`FAILED to save report for "${companyName}" (key: ${companyKey}):`, saveError);
+        console.error(`FAILED to save report for "${officialName}" (key: ${companyKey}):`, saveError);
         // Continue without saving - still return the report
       }
     } else {
-      console.error(`ERROR: Firestore DB not initialized - cannot save report for "${companyName}". Check FIREBASE_SERVICE_ACCOUNT_KEY env var.`);
+      console.error(`ERROR: Firestore DB not initialized - cannot save report for "${officialName}". Check FIREBASE_SERVICE_ACCOUNT_KEY env var.`);
     }
 
     return NextResponse.json({
