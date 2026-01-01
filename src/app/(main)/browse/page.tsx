@@ -1,15 +1,15 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { CompanyCard } from '@/components/company/CompanyCard';
+import { CompanyReportView } from '@/components/company/CompanyReport';
 import { LoadingScreen } from '@/components/ui/Spinner';
 import { Button } from '@/components/ui/Button';
 import { CompanyReport } from '@/types';
-import { Search, Filter, TrendingUp, Clock, RefreshCw } from 'lucide-react';
+import { Search, Filter, TrendingUp, Clock, RefreshCw, ArrowLeft } from 'lucide-react';
 
 const INDUSTRIES = [
   'All',
@@ -33,7 +33,6 @@ const LEANINGS = [
 ];
 
 export default function BrowsePage() {
-  const router = useRouter();
   const [reports, setReports] = useState<CompanyReport[]>([]);
   const [filteredReports, setFilteredReports] = useState<CompanyReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -41,6 +40,7 @@ export default function BrowsePage() {
   const [selectedIndustry, setSelectedIndustry] = useState('All');
   const [selectedLeaning, setSelectedLeaning] = useState('All');
   const [sortBy, setSortBy] = useState<'popular' | 'recent'>('popular');
+  const [selectedReport, setSelectedReport] = useState<CompanyReport | null>(null);
 
   useEffect(() => {
     loadReports();
@@ -53,11 +53,19 @@ export default function BrowsePage() {
   const loadReports = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/browse?sort=${sortBy}&limit=50`);
+      const response = await fetch(`/api/browse?sort=${sortBy}&limit=100`);
       const data = await response.json();
 
       if (data.success && data.data) {
-        setReports(data.data);
+        // Deduplicate by companyKey - keep the most recent entry for each company
+        const seenKeys = new Map<string, CompanyReport>();
+        for (const report of data.data) {
+          const key = report.companyKey || report.company?.name?.toLowerCase().replace(/\s+/g, '_');
+          if (!seenKeys.has(key)) {
+            seenKeys.set(key, report);
+          }
+        }
+        setReports(Array.from(seenKeys.values()));
       } else {
         setReports([]);
       }
@@ -94,15 +102,34 @@ export default function BrowsePage() {
   };
 
   const handleCompanyClick = (report: CompanyReport) => {
-    // Store the report in sessionStorage so the home page can display it
-    sessionStorage.setItem('selectedReport', JSON.stringify(report));
-    router.push('/?fromBrowse=true');
+    setSelectedReport(report);
+  };
+
+  const handleBack = () => {
+    setSelectedReport(null);
   };
 
   if (isLoading) {
     return (
       <MainLayout title="Browse" subtitle="Explore company political profiles">
         <LoadingScreen message="Loading companies..." />
+      </MainLayout>
+    );
+  }
+
+  // Show report view if a company is selected
+  if (selectedReport) {
+    return (
+      <MainLayout title="Browse" subtitle="Explore company political profiles">
+        <div>
+          <div className="mb-4">
+            <Button variant="ghost" onClick={handleBack}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Browse
+            </Button>
+          </div>
+          <CompanyReportView report={selectedReport} />
+        </div>
       </MainLayout>
     );
   }
@@ -199,14 +226,9 @@ export default function BrowsePage() {
               </h3>
               <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {reports.length === 0
-                  ? 'Search for a company on the home page to start building your database.'
+                  ? 'Search for a company on the Search tab to start building your database.'
                   : 'Try adjusting your search or filters.'}
               </p>
-              {reports.length === 0 && (
-                <Button onClick={() => router.push('/')}>
-                  Search Companies
-                </Button>
-              )}
             </CardContent>
           </Card>
         ) : (

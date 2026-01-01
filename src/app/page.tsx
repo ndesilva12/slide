@@ -42,12 +42,13 @@ function HomeContent() {
   const { lists, reorderList, loading: listsLoading } = useUserLists();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingMessage, setLoadingMessage] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [currentReport, setCurrentReport] = useState<CompanyReport | null>(null);
   const [viewMode, setViewMode] = useState<'my' | 'global'>('my');
   const [globalRankings, setGlobalRankings] = useState<GlobalRankings>({ support: [], oppose: [] });
   const [globalLoading, setGlobalLoading] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
+  const [editingList, setEditingList] = useState<'support' | 'oppose' | null>(null);
 
   // Check for report from Browse page on mount
   useEffect(() => {
@@ -98,6 +99,7 @@ function HomeContent() {
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
+    setLoadingMessage('Analyzing company...');
     setError(null);
     setCurrentReport(null);
 
@@ -119,6 +121,7 @@ function HomeContent() {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {
       setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -129,6 +132,7 @@ function HomeContent() {
 
   const handleItemClick = async (item: RankingItem) => {
     setIsLoading(true);
+    setLoadingMessage('Loading report...');
     try {
       const response = await fetch('/api/analyze', {
         method: 'POST',
@@ -143,6 +147,7 @@ function HomeContent() {
       console.error('Failed to fetch report:', err);
     } finally {
       setIsLoading(false);
+      setLoadingMessage('');
     }
   };
 
@@ -194,11 +199,13 @@ function HomeContent() {
             <Spinner size="lg" />
             <div className="text-center">
               <p className="text-lg font-medium text-gray-900 dark:text-white">
-                Analyzing company...
+                {loadingMessage || 'Loading...'}
               </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Searching public records, news, and donation databases
-              </p>
+              {loadingMessage === 'Analyzing company...' && (
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Searching public records, news, and donation databases
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -231,37 +238,24 @@ function HomeContent() {
         {/* Rankings View */}
         {showRankings && (
           <div className="space-y-6">
-            {/* View Toggle */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-2">
-                {user && (
-                  <Button
-                    variant={viewMode === 'my' ? 'primary' : 'ghost'}
-                    onClick={() => setViewMode('my')}
-                  >
-                    <User className="h-4 w-4 mr-2" />
-                    My Rankings
-                  </Button>
-                )}
+            {/* View Toggle - Only my/global buttons */}
+            <div className="flex justify-center gap-2">
+              {user && (
                 <Button
-                  variant={viewMode === 'global' ? 'primary' : 'ghost'}
-                  onClick={() => setViewMode('global')}
+                  variant={viewMode === 'my' ? 'primary' : 'ghost'}
+                  onClick={() => setViewMode('my')}
                 >
-                  <Globe className="h-4 w-4 mr-2" />
-                  Global
-                </Button>
-              </div>
-
-              {viewMode === 'my' && user && (
-                <Button
-                  variant={isEditing ? 'primary' : 'outline'}
-                  size="sm"
-                  onClick={() => setIsEditing(!isEditing)}
-                >
-                  <GripVertical className="h-4 w-4 mr-1" />
-                  {isEditing ? 'Done' : 'Reorder'}
+                  <User className="h-4 w-4 mr-2" />
+                  My Rankings
                 </Button>
               )}
+              <Button
+                variant={viewMode === 'global' ? 'primary' : 'ghost'}
+                onClick={() => setViewMode('global')}
+              >
+                <Globe className="h-4 w-4 mr-2" />
+                Global
+              </Button>
             </div>
 
             {/* Not logged in message for My Rankings */}
@@ -293,14 +287,24 @@ function HomeContent() {
                 {/* Support Column */}
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <ThumbsUp className="h-5 w-5 text-green-600" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Support
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({lists.support.length})
-                      </span>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <ThumbsUp className="h-5 w-5 text-green-600" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Support
+                        </h3>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          ({lists.support.length})
+                        </span>
+                      </div>
+                      <Button
+                        variant={editingList === 'support' ? 'primary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setEditingList(editingList === 'support' ? null : 'support')}
+                      >
+                        <GripVertical className="h-4 w-4 mr-1" />
+                        {editingList === 'support' ? 'Done' : 'Reorder'}
+                      </Button>
                     </div>
                     {listsLoading ? (
                       <div className="flex justify-center py-8">
@@ -311,7 +315,7 @@ function HomeContent() {
                         items={mySupport}
                         onReorder={(keys) => handleReorder('support', keys)}
                         onItemClick={handleItemClick}
-                        isEditable={isEditing}
+                        isEditable={editingList === 'support'}
                         emptyMessage="No companies in your support list"
                       />
                     )}
@@ -321,14 +325,24 @@ function HomeContent() {
                 {/* Oppose Column */}
                 <Card>
                   <CardContent className="p-4">
-                    <div className="flex items-center gap-2 mb-4">
-                      <ThumbsDown className="h-5 w-5 text-red-600" />
-                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Oppose
-                      </h3>
-                      <span className="text-sm text-gray-500 dark:text-gray-400">
-                        ({lists.oppose.length})
-                      </span>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-2">
+                        <ThumbsDown className="h-5 w-5 text-red-600" />
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                          Oppose
+                        </h3>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          ({lists.oppose.length})
+                        </span>
+                      </div>
+                      <Button
+                        variant={editingList === 'oppose' ? 'primary' : 'ghost'}
+                        size="sm"
+                        onClick={() => setEditingList(editingList === 'oppose' ? null : 'oppose')}
+                      >
+                        <GripVertical className="h-4 w-4 mr-1" />
+                        {editingList === 'oppose' ? 'Done' : 'Reorder'}
+                      </Button>
                     </div>
                     {listsLoading ? (
                       <div className="flex justify-center py-8">
@@ -339,7 +353,7 @@ function HomeContent() {
                         items={myOppose}
                         onReorder={(keys) => handleReorder('oppose', keys)}
                         onItemClick={handleItemClick}
-                        isEditable={isEditing}
+                        isEditable={editingList === 'oppose'}
                         emptyMessage="No companies in your oppose list"
                       />
                     )}

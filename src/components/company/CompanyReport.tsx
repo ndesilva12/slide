@@ -170,7 +170,11 @@ export function CompanyReportView({ report }: CompanyReportProps) {
             {/* Right side - Political Compass */}
             {analysis.politicalCompass && (
               <div className="flex-shrink-0 self-center">
-                <PoliticalCompass compass={analysis.politicalCompass} size="lg" />
+                <PoliticalCompass
+                  compass={analysis.politicalCompass}
+                  size="lg"
+                  leaning={analysis.overallLeaning}
+                />
               </div>
             )}
           </div>

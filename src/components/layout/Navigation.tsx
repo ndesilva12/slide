@@ -3,14 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, Library, User, LogOut, Scale } from 'lucide-react';
+import { Search, LayoutGrid, User, LogOut, Scale } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 const navItems = [
-  { href: '/', label: 'Home', icon: Home },
-  { href: '/browse', label: 'Browse', icon: Search },
-  { href: '/library', label: 'Library', icon: Library },
+  { href: '/', label: 'Search', icon: Search },
+  { href: '/browse', label: 'Browse', icon: LayoutGrid },
 ];
 
 export function Navigation() {
@@ -22,11 +21,8 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}
-          <Link href="/" className="hidden md:flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-red-500 rounded-lg flex items-center justify-center">
-              <Scale className="h-5 w-5 text-white" />
-            </div>
-            <span className="text-xl font-bold text-gray-900 dark:text-white">Scale</span>
+          <Link href="/" className="hidden md:flex items-center">
+            <Scale className="h-9 w-9 text-purple-600 dark:text-purple-400" />
           </Link>
 
           {/* Navigation Items */}
@@ -42,7 +38,7 @@ export function Navigation() {
                     flex flex-col md:flex-row items-center justify-center px-4 py-2 rounded-lg
                     transition-colors
                     ${isActive
-                      ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                      ? 'text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                     }
                   `}

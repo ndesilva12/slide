@@ -115,7 +115,7 @@ Return a JSON object with this structure (all arrays can be empty if no data ava
 }
 
 Field details:
-- politicalCompass: x is Left(-2) to Right(+2), y is Safety/Authoritarian(-2) to Freedom/Libertarian(+2). Set based on regulatory stance, privacy policies, government cooperation.
+- politicalCompass: x is Left(-3) to Right(+3), y is Safety/Authoritarian(-3) to Freedom/Libertarian(+3). Set based on regulatory stance, privacy policies, government cooperation.
 - donations: Include PAC, executive, and employee donations if known. Each: {recipient, party, amount, year, donorType, source}
 - publicStatements: Leadership statements on policy. Each: {date, speaker, role, statement, topic, source, url}
 - partnerships: Political orgs/trade associations. Each: {partnerName, partnerType, politicalLeaning, relevance}
