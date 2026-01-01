@@ -183,17 +183,17 @@ function HomeContent() {
 
   return (
     <MainLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 md:space-y-6 overflow-x-hidden">
         {/* Search Bar - Always visible at top */}
-        <div className="text-center pt-4">
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2">
+        <div className="text-center pt-2 md:pt-4">
+          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
             Discover Company{' '}
             <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 bg-clip-text text-transparent">
               Politics
             </span>
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 mb-6">
-            Search for any company to see their political affiliations, donations, and positions
+          <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 mb-3 md:mb-6 px-2">
+            Search for any company to see their political affiliations
           </p>
           <div className="max-w-2xl mx-auto">
             <SearchBar
@@ -248,7 +248,7 @@ function HomeContent() {
 
         {/* Rankings View */}
         {showRankings && (
-          <div className="space-y-6">
+          <div className="space-y-3 md:space-y-6">
             {/* View Toggle - Only my/global buttons */}
             <div className="flex justify-center gap-2">
               {user && (
@@ -294,7 +294,7 @@ function HomeContent() {
 
             {/* My Rankings View */}
             {viewMode === 'my' && user && (
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-3 md:gap-6">
                 {/* Support Column */}
                 <Card>
                   <CardContent className="p-4">
@@ -375,7 +375,7 @@ function HomeContent() {
 
             {/* Global Rankings View */}
             {viewMode === 'global' && (
-              <div className="grid md:grid-cols-2 gap-6">
+              <div className="grid md:grid-cols-2 gap-3 md:gap-6">
                 {/* Most Supported Column */}
                 <Card>
                   <CardContent className="p-4">

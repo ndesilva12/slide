@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { User, Settings, Scale } from 'lucide-react';
+import { User, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 interface HeaderProps {
@@ -14,42 +14,38 @@ export function Header({ title, subtitle }: HeaderProps) {
   const { user } = useAuth();
 
   return (
-    <header className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700 md:hidden">
-      <div className="px-4 py-4">
-        <div className="flex items-center justify-between">
-          <div>
-            {title ? (
-              <>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">{title}</h1>
-                {subtitle && (
-                  <p className="text-sm text-gray-500 dark:text-gray-400">{subtitle}</p>
-                )}
-              </>
-            ) : (
-              <Link href="/" className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 via-purple-500 to-red-500 rounded-lg flex items-center justify-center">
-                  <Scale className="h-5 w-5 text-white" />
-                </div>
-                <span className="text-xl font-bold text-gray-900 dark:text-white">Scale</span>
-              </Link>
-            )}
-          </div>
+    <header className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-800 md:hidden">
+      <div className="px-4 py-2">
+        <div className="flex items-center justify-between h-10">
+          {/* Always show logo */}
+          <Link href="/" className="flex items-center h-full">
+            <img
+              src="/scale-light.png"
+              alt="Scale"
+              className="h-full max-h-8 dark:hidden"
+            />
+            <img
+              src="/scale-dark.png"
+              alt="Scale"
+              className="h-full max-h-8 hidden dark:block"
+            />
+          </Link>
 
           {user ? (
-            <div className="flex items-center space-x-3">
-              <button className="p-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
-                <Settings className="h-5 w-5" />
+            <div className="flex items-center space-x-2">
+              <button className="p-1.5 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg">
+                <Settings className="h-4 w-4" />
               </button>
-              <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+              <div className="w-7 h-7 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
                 {user.photoURL ? (
-                  <img src={user.photoURL} alt="Profile" className="w-8 h-8 rounded-full" />
+                  <img src={user.photoURL} alt="Profile" className="w-7 h-7 rounded-full" />
                 ) : (
-                  <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                  <User className="h-3.5 w-3.5 text-gray-600 dark:text-gray-400" />
                 )}
               </div>
             </div>
           ) : (
-            <Link href="/login" className="text-blue-600 dark:text-blue-400 font-medium">
+            <Link href="/login" className="text-sm text-blue-600 dark:text-blue-400 font-medium">
               Sign In
             </Link>
           )}
