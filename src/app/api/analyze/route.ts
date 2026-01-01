@@ -10,7 +10,8 @@ const CACHE_EXPIRY_DAYS = 30;
 // Increment this version when report format changes to force cache refresh
 // v1: Initial format
 // v2: Added politicalCompass, revenueBreakdown, donorType, governance focus
-const REPORT_SCHEMA_VERSION = 2;
+// v3: Simplified prompt for reliability, added company aliases
+const REPORT_SCHEMA_VERSION = 3;
 
 export async function POST(request: NextRequest) {
   try {

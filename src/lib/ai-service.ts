@@ -87,151 +87,79 @@ async function callAI(messages: { role: string; content: string }[]): Promise<st
   return callAnthropic(messages);
 }
 
-const ANALYSIS_PROMPT = `You are a political research analyst. Your task is to analyze a company's political affiliations, donations, positions, and financial allocation.
+// Company alias mapping - redirects common names to parent companies
+const COMPANY_ALIASES: Record<string, string> = {
+  'facebook': 'Meta',
+  'instagram': 'Meta',
+  'whatsapp': 'Meta',
+  'google': 'Alphabet',
+  'youtube': 'Alphabet',
+  'gmail': 'Alphabet',
+  'android': 'Alphabet',
+  'twitter': 'X Corp',
+  'aws': 'Amazon',
+  'whole foods': 'Amazon',
+  'linkedin': 'Microsoft',
+  'github': 'Microsoft',
+  'xbox': 'Microsoft',
+  'tiktok': 'ByteDance',
+  'snapchat': 'Snap Inc',
+  'venmo': 'PayPal',
+  'cash app': 'Block Inc',
+  'square': 'Block Inc',
+};
 
-For the given company, provide a comprehensive analysis in JSON format with the following structure:
+function resolveCompanyName(name: string): string {
+  const normalized = name.toLowerCase().trim();
+  return COMPANY_ALIASES[normalized] || name;
+}
+
+const ANALYSIS_PROMPT = `You are a political research analyst. Analyze a company's political affiliations and positions.
+
+Return a JSON object with this structure (all arrays can be empty if no data available):
 {
   "company": {
-    "name": "Company Name",
+    "name": "Official Company Name",
     "ticker": "TICKER or null",
     "industry": "Industry",
-    "description": "Brief company description",
+    "description": "Brief description",
     "website": "https://..."
   },
   "analysis": {
-    "overallLeaning": "Left" | "Center-Left" | "Center" | "Center-Right" | "Right" | "Unknown",
+    "overallLeaning": "Left|Center-Left|Center|Center-Right|Right|Unknown",
     "confidenceScore": 0-100,
-    "summary": "A 2-3 sentence summary of the company's political stance",
-    "politicalCompass": {
-      "x": 0,
-      "y": 0
-    },
-    "donations": [
-      {
-        "recipient": "Politician or PAC name",
-        "party": "Republican" | "Democrat" | "Independent" | "Other",
-        "amount": 10000,
-        "year": 2024,
-        "donorType": "Corporate PAC" | "Executive" | "Employee" | "Other",
-        "source": "FEC records / OpenSecrets / etc."
-      }
-    ],
-    "publicStatements": [
-      {
-        "date": "YYYY-MM-DD",
-        "speaker": "Name",
-        "role": "CEO / Spokesperson / etc.",
-        "statement": "Quote or paraphrase",
-        "topic": "Topic category",
-        "source": "Source name",
-        "url": "https://..."
-      }
-    ],
-    "partnerships": [
-      {
-        "partnerName": "Organization name",
-        "partnerType": "Advocacy group / Trade association / etc.",
-        "politicalLeaning": "Description of political stance",
-        "relevance": "Why this partnership matters politically"
-      }
-    ],
-    "revenueBreakdown": {
-      "executiveCompensation": 5,
-      "employeeWages": 30,
-      "operatingExpenses": 20,
-      "researchAndDevelopment": 15,
-      "marketing": 10,
-      "stockBuybacks": 5,
-      "dividends": 3,
-      "capitalExpenditures": 5,
-      "charitableDonations": 1,
-      "lobbyingAndPolitical": 0.5,
-      "netProfit": 5.5,
-      "source": "Annual report / SEC filings",
-      "fiscalYear": 2024
-    },
-    "keyTopics": ["Topic 1", "Topic 2"],
-    "sources": ["Source 1", "Source 2"]
+    "summary": "2-3 sentence summary of political stance",
+    "politicalCompass": { "x": 0, "y": 0 },
+    "donations": [],
+    "publicStatements": [],
+    "partnerships": [],
+    "revenueBreakdown": null,
+    "keyTopics": [],
+    "sources": []
   }
 }
 
-Guidelines:
-1. Be factual and cite sources where possible
+Field details:
+- politicalCompass: x is Left(-2) to Right(+2), y is Safety/Authoritarian(-2) to Freedom/Libertarian(+2). Set based on regulatory stance, privacy policies, government cooperation.
+- donations: Include PAC, executive, and employee donations if known. Each: {recipient, party, amount, year, donorType, source}
+- publicStatements: Leadership statements on policy. Each: {date, speaker, role, statement, topic, source, url}
+- partnerships: Political orgs/trade associations. Each: {partnerName, partnerType, politicalLeaning, relevance}
+- revenueBreakdown: If available from SEC filings, include percentages for executiveCompensation, employeeWages, operatingExpenses, researchAndDevelopment, marketing, stockBuybacks, dividends, capitalExpenditures, charitableDonations, lobbyingAndPolitical, netProfit, source, fiscalYear. Otherwise null.
 
-2. POLITICAL COMPASS - Plot the company on a 2D political spectrum:
-   X-axis (Left to Right): -2 to +2
-   - -2: Strong Left (pro-regulation, higher taxes, strong labor protections)
-   - -1: Center-Left
-   -  0: Center/Neutral
-   - +1: Center-Right
-   - +2: Strong Right (pro-deregulation, lower taxes, free market)
-
-   Y-axis (Safety to Freedom): -2 to +2
-   - -2: Safety/Collectivist (supports government oversight, mandates, surveillance for security, protectionism)
-   - -1: Moderate Safety
-   -  0: Balanced
-   - +1: Moderate Freedom
-   - +2: Freedom/Individualist (supports privacy, deregulation, free speech absolutism, minimal intervention)
-
-   Consider: data privacy stances, content moderation policies, support for regulation vs self-regulation, trade/tariff positions, surveillance cooperation
-
-3. DONATIONS - Include political donations from ALL sources:
-   - Corporate PAC donations
-   - Executive and leadership donations
-   - Employee donations (aggregate when available from FEC/OpenSecrets)
-   - Mark each donation with the appropriate donorType
-
-4. POLITICAL TOPICS - Focus primarily on GOVERNANCE policies:
-   - Taxes and tax policy (corporate tax rates, tax incentives, offshore policies)
-   - Regulations and regulatory policy (support/opposition to industry regulation)
-   - Freedom of speech and censorship (content moderation, platform policies)
-   - Foreign policy (trade deals, tariffs, international relations)
-   - Government spending and fiscal policy
-   - Privacy vs security tradeoffs
-   - Free market vs protectionism
-   - Monetary policy positions
-
-   Secondary consideration for social issues:
-   - Climate and environmental policy
-   - Labor and workplace policies
-   - Healthcare policy
-   - Immigration policy
-
-5. REVENUE BREAKDOWN - Show where company money goes as percentages:
-   - Executive compensation (C-suite, board)
-   - Employee wages and benefits
-   - Operating expenses
-   - R&D investment
-   - Marketing and advertising
-   - Stock buybacks and dividends
-   - Capital expenditures
-   - Charitable donations
-   - Lobbying and political spending
-   - Net profit retained
-   Use data from annual reports, 10-K filings, or proxy statements. Estimate if exact data unavailable.
-
-6. Consider lobbying activities and trade association memberships
-7. If information is limited, acknowledge uncertainty with a lower confidence score
-8. Always include the source of information
-
-Return ONLY valid JSON, no additional text.`;
+Focus on GOVERNANCE policies: taxes, regulations, free speech, trade, government spending.
+Return ONLY valid JSON.`;
 
 export async function analyzeCompany(companyName: string): Promise<CompanyReport> {
+  // Resolve company aliases (e.g., "Facebook" -> "Meta", "Google" -> "Alphabet")
+  const resolvedName = resolveCompanyName(companyName);
+
   const messages = [
     { role: 'system', content: ANALYSIS_PROMPT },
     {
       role: 'user',
-      content: `Analyze the political affiliations, donations, positions, and financial allocation of: ${companyName}
+      content: `Analyze: ${resolvedName}
 
-Please search for and include:
-1. Political donations from the company's PAC, executives, AND employees (check FEC records, OpenSecrets)
-2. Public statements on GOVERNANCE issues: taxes, regulations, free speech, censorship, foreign policy, trade, government spending
-3. Lobbying activities and political advocacy
-4. Partnerships with politically-aligned organizations
-5. Revenue/expense breakdown: where does the company's money go? (executive pay, wages, R&D, buybacks, lobbying, etc.)
-6. Any notable positions on regulatory, fiscal, or trade policy
-
-Focus on governance and policy positions over social issues. Provide comprehensive, factual analysis with sources.`
+Include political donations (PAC, executive, employee), public statements on governance policies (taxes, regulations, trade, free speech), and lobbying activities. Provide sources.`
     },
   ];
 
