@@ -12,14 +12,18 @@ interface BadgeProps {
 export function Badge({ children, variant = 'default', size = 'md', className = '' }: BadgeProps) {
   const variants = {
     default: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
-    left: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
-    'center-left': 'bg-sky-100 text-sky-700 dark:bg-sky-900 dark:text-sky-300',
-    center: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
-    'center-right': 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300',
-    right: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
-    success: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
-    warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300',
-    danger: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
+    // Left leaning - blue/purple
+    left: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300',
+    'center-left': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
+    // Center - purple
+    center: 'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300',
+    // Right leaning - red/purple
+    'center-right': 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300',
+    right: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
+    // Utility variants
+    success: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
+    warning: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/50 dark:text-yellow-300',
+    danger: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
   };
 
   const sizes = {
