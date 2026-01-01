@@ -22,6 +22,7 @@ import { CompanyReport as CompanyReportType } from '@/types';
 import { useUserLists } from '@/contexts/UserListsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { createCompanyKey } from '@/lib/company-utils';
+import { PoliticalCompass } from './PoliticalCompass';
 
 interface CompanyReportProps {
   report: CompanyReportType;
@@ -169,7 +170,14 @@ export function CompanyReportView({ report }: CompanyReportProps) {
             <PoliticalLeaningBadge leaning={analysis.overallLeaning} />
           </div>
 
-          <p className="text-gray-700 dark:text-gray-300 mb-4">{analysis.summary}</p>
+          <div className="flex flex-col md:flex-row gap-6 mb-4">
+            <p className="text-gray-700 dark:text-gray-300 flex-1">{analysis.summary}</p>
+            {analysis.politicalCompass && (
+              <div className="flex-shrink-0">
+                <PoliticalCompass compass={analysis.politicalCompass} size="sm" />
+              </div>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4">

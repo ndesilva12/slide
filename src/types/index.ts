@@ -62,10 +62,19 @@ export interface Partnership {
   relevance: string;
 }
 
+// Political compass coordinates
+// x: -2 (Left) to +2 (Right)
+// y: -2 (Safety/Authoritarian) to +2 (Freedom/Libertarian)
+export interface PoliticalCompass {
+  x: number; // Left (-2) to Right (+2)
+  y: number; // Safety (-2) to Freedom (+2)
+}
+
 export interface PoliticalAnalysis {
   overallLeaning: 'Left' | 'Center-Left' | 'Center' | 'Center-Right' | 'Right' | 'Unknown';
   confidenceScore: number; // 0-100
   summary: string;
+  politicalCompass?: PoliticalCompass;
   donations: PoliticalDonation[];
   publicStatements: PublicStatement[];
   partnerships: Partnership[];

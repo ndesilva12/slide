@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { analyzeCompany } from '@/lib/ai-service';
 import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { createCompanyKey, daysSince } from '@/lib/company-utils';
+import { fetchCompanyLogo } from '@/lib/logo-service';
 import { CompanyReport } from '@/types';
 
 const CACHE_EXPIRY_DAYS = 30;
@@ -75,6 +76,17 @@ export async function POST(request: NextRequest) {
     // Add company key and search count
     report.companyKey = companyKey;
     report.searchCount = 1;
+
+    // Fetch company logo
+    try {
+      const logoUrl = await fetchCompanyLogo(companyName, report.company.website);
+      if (logoUrl) {
+        report.company.logoUrl = logoUrl;
+        console.log(`Found logo for "${companyName}": ${logoUrl}`);
+      }
+    } catch (logoError) {
+      console.error('Failed to fetch logo:', logoError);
+    }
 
     // Save to Firestore
     if (db) {

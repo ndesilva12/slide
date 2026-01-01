@@ -102,6 +102,10 @@ For the given company, provide a comprehensive analysis in JSON format with the 
     "overallLeaning": "Left" | "Center-Left" | "Center" | "Center-Right" | "Right" | "Unknown",
     "confidenceScore": 0-100,
     "summary": "A 2-3 sentence summary of the company's political stance",
+    "politicalCompass": {
+      "x": 0,
+      "y": 0
+    },
     "donations": [
       {
         "recipient": "Politician or PAC name",
@@ -154,13 +158,30 @@ For the given company, provide a comprehensive analysis in JSON format with the 
 Guidelines:
 1. Be factual and cite sources where possible
 
-2. DONATIONS - Include political donations from ALL sources:
+2. POLITICAL COMPASS - Plot the company on a 2D political spectrum:
+   X-axis (Left to Right): -2 to +2
+   - -2: Strong Left (pro-regulation, higher taxes, strong labor protections)
+   - -1: Center-Left
+   -  0: Center/Neutral
+   - +1: Center-Right
+   - +2: Strong Right (pro-deregulation, lower taxes, free market)
+
+   Y-axis (Safety to Freedom): -2 to +2
+   - -2: Safety/Collectivist (supports government oversight, mandates, surveillance for security, protectionism)
+   - -1: Moderate Safety
+   -  0: Balanced
+   - +1: Moderate Freedom
+   - +2: Freedom/Individualist (supports privacy, deregulation, free speech absolutism, minimal intervention)
+
+   Consider: data privacy stances, content moderation policies, support for regulation vs self-regulation, trade/tariff positions, surveillance cooperation
+
+3. DONATIONS - Include political donations from ALL sources:
    - Corporate PAC donations
    - Executive and leadership donations
    - Employee donations (aggregate when available from FEC/OpenSecrets)
    - Mark each donation with the appropriate donorType
 
-3. POLITICAL TOPICS - Focus primarily on GOVERNANCE policies:
+4. POLITICAL TOPICS - Focus primarily on GOVERNANCE policies:
    - Taxes and tax policy (corporate tax rates, tax incentives, offshore policies)
    - Regulations and regulatory policy (support/opposition to industry regulation)
    - Freedom of speech and censorship (content moderation, platform policies)
@@ -176,7 +197,7 @@ Guidelines:
    - Healthcare policy
    - Immigration policy
 
-4. REVENUE BREAKDOWN - Show where company money goes as percentages:
+5. REVENUE BREAKDOWN - Show where company money goes as percentages:
    - Executive compensation (C-suite, board)
    - Employee wages and benefits
    - Operating expenses
@@ -189,9 +210,9 @@ Guidelines:
    - Net profit retained
    Use data from annual reports, 10-K filings, or proxy statements. Estimate if exact data unavailable.
 
-5. Consider lobbying activities and trade association memberships
-6. If information is limited, acknowledge uncertainty with a lower confidence score
-7. Always include the source of information
+6. Consider lobbying activities and trade association memberships
+7. If information is limited, acknowledge uncertainty with a lower confidence score
+8. Always include the source of information
 
 Return ONLY valid JSON, no additional text.`;
 
@@ -248,6 +269,7 @@ Focus on governance and policy positions over social issues. Provide comprehensi
       overallLeaning: parsed.analysis.overallLeaning || 'Unknown',
       confidenceScore: parsed.analysis.confidenceScore || 50,
       summary: parsed.analysis.summary || 'Analysis pending.',
+      politicalCompass: parsed.analysis.politicalCompass || undefined,
       donations: parsed.analysis.donations || [],
       publicStatements: parsed.analysis.publicStatements || [],
       partnerships: parsed.analysis.partnerships || [],
