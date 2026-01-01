@@ -57,6 +57,9 @@ const COMPANY_ALIASES: Record<string, string> = {
   'venmo': 'PayPal',
   'cash app': 'Block Inc',
   'square': 'Block Inc',
+  'chick fil a': 'Chick-fil-A',
+  'chickfila': 'Chick-fil-A',
+  'chic fil a': 'Chick-fil-A',
 };
 
 /**

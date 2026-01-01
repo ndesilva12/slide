@@ -106,11 +106,12 @@ export async function POST(request: NextRequest) {
     // Save to Firestore
     if (db) {
       try {
+        console.log(`Attempting to save report for "${companyName}" with key: ${companyKey}`);
         const docRef = db.collection('reports').doc(companyKey);
         const existingDoc = await docRef.get();
         const existingSearchCount = existingDoc.exists ? (existingDoc.data()?.searchCount || 0) : 0;
 
-        await docRef.set({
+        const reportData = {
           companyKey: companyKey,
           company: report.company,
           analysis: {
@@ -124,19 +125,21 @@ export async function POST(request: NextRequest) {
           searchCount: existingSearchCount + 1,
           generatedBy: 'ai',
           schemaVersion: REPORT_SCHEMA_VERSION,
-        });
+        };
+
+        await docRef.set(reportData);
 
         report.id = companyKey;
         report.company.id = companyKey;
         report.searchCount = existingSearchCount + 1;
 
-        console.log(`Saved report for "${companyName}" to Firestore`);
+        console.log(`SUCCESS: Saved report for "${companyName}" to Firestore (key: ${companyKey})`);
       } catch (saveError) {
-        console.error('Failed to save report to Firestore:', saveError);
+        console.error(`FAILED to save report for "${companyName}" (key: ${companyKey}):`, saveError);
         // Continue without saving - still return the report
       }
     } else {
-      console.warn('Firestore not initialized - report not cached');
+      console.error(`ERROR: Firestore DB not initialized - cannot save report for "${companyName}". Check FIREBASE_SERVICE_ACCOUNT_KEY env var.`);
     }
 
     return NextResponse.json({
