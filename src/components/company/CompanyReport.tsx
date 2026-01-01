@@ -531,7 +531,24 @@ export function CompanyReportView({ report }: CompanyReportProps) {
             <ul className="space-y-1">
               {analysis.sources.map((source, i) => (
                 <li key={i} className="text-sm text-gray-500 dark:text-gray-400">
-                  {source}
+                  {typeof source === 'string' ? (
+                    source
+                  ) : typeof source === 'object' && source !== null ? (
+                    (source as { name?: string; url?: string }).url ? (
+                      <a
+                        href={(source as { url: string }).url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-500 hover:text-blue-600 dark:text-blue-400 hover:underline"
+                      >
+                        {(source as { name?: string }).name || (source as { url: string }).url}
+                      </a>
+                    ) : (
+                      (source as { name?: string }).name || JSON.stringify(source)
+                    )
+                  ) : (
+                    String(source)
+                  )}
                 </li>
               ))}
             </ul>
