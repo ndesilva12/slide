@@ -11,11 +11,12 @@ const CACHE_EXPIRY_DAYS = 30;
 // v1: Initial format
 // v2: Added politicalCompass, revenueBreakdown, donorType, governance focus
 // v3: Simplified prompt for reliability, added company aliases
-const REPORT_SCHEMA_VERSION = 3;
+// v4: Force refresh for X Corp (was showing old Twitter Inc data)
+const REPORT_SCHEMA_VERSION = 4;
 
 export async function POST(request: NextRequest) {
   try {
-    const { companyName } = await request.json();
+    const { companyName, forceRefresh } = await request.json();
 
     if (!companyName || typeof companyName !== 'string') {
       return NextResponse.json(
@@ -27,8 +28,12 @@ export async function POST(request: NextRequest) {
     const companyKey = createCompanyKey(companyName);
     const { db } = getFirebaseAdmin();
 
-    // Check cache first
-    if (db) {
+    // Check cache first (skip if forceRefresh is true)
+    if (forceRefresh) {
+      console.log(`Force refresh requested for "${companyName}" (key: ${companyKey})`);
+    }
+
+    if (db && !forceRefresh) {
       try {
         const docRef = db.collection('reports').doc(companyKey);
         const docSnap = await docRef.get();
