@@ -20,7 +20,9 @@ import {
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { Modal } from '@/components/ui/Modal';
 import { CompanyReport as CompanyReportType } from '@/types';
+import Link from 'next/link';
 import { useUserLists } from '@/contexts/UserListsContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { createCompanyKey } from '@/lib/company-utils';
@@ -34,12 +36,18 @@ export function CompanyReportView({ report }: CompanyReportProps) {
   const { company, analysis } = report;
   const { user } = useAuth();
   const { isInSupport, isInOppose, addToList, removeFromList } = useUserLists();
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   const companyKey = report.companyKey || createCompanyKey(company.name);
   const inSupport = isInSupport(companyKey);
   const inOppose = isInOppose(companyKey);
 
   const handleListAction = async (listType: 'support' | 'oppose') => {
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
+
     const isInList = listType === 'support' ? inSupport : inOppose;
     if (isInList) {
       await removeFromList(listType, companyKey);
@@ -140,26 +148,34 @@ export function CompanyReportView({ report }: CompanyReportProps) {
 
               {/* Action buttons */}
               <div className="flex items-center gap-3 mt-4 flex-wrap">
-                {user && (
-                  <>
-                    <Button
-                      variant={inSupport ? 'primary' : 'outline'}
-                      onClick={() => handleListAction('support')}
-                      className={inSupport ? 'bg-green-600 hover:bg-green-700' : 'hover:border-green-500 hover:text-green-600'}
-                    >
-                      {inSupport ? <Check className="h-4 w-4 mr-2" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
-                      {inSupport ? 'Supporting' : 'Support'}
-                    </Button>
-                    <Button
-                      variant={inOppose ? 'primary' : 'outline'}
-                      onClick={() => handleListAction('oppose')}
-                      className={inOppose ? 'bg-red-600 hover:bg-red-700' : 'hover:border-red-500 hover:text-red-600'}
-                    >
-                      {inOppose ? <Check className="h-4 w-4 mr-2" /> : <ThumbsDown className="h-4 w-4 mr-2" />}
-                      {inOppose ? 'Opposing' : 'Oppose'}
-                    </Button>
-                  </>
-                )}
+                <Button
+                  variant={inSupport ? 'primary' : 'outline'}
+                  onClick={() => handleListAction('support')}
+                  className={
+                    inSupport
+                      ? 'bg-green-600 hover:bg-green-700'
+                      : user
+                        ? 'hover:border-green-500 hover:text-green-600'
+                        : 'opacity-50 border-gray-300 text-gray-400'
+                  }
+                >
+                  {inSupport ? <Check className="h-4 w-4 mr-2" /> : <ThumbsUp className="h-4 w-4 mr-2" />}
+                  {inSupport ? 'Supporting' : 'Support'}
+                </Button>
+                <Button
+                  variant={inOppose ? 'primary' : 'outline'}
+                  onClick={() => handleListAction('oppose')}
+                  className={
+                    inOppose
+                      ? 'bg-red-600 hover:bg-red-700'
+                      : user
+                        ? 'hover:border-red-500 hover:text-red-600'
+                        : 'opacity-50 border-gray-300 text-gray-400'
+                  }
+                >
+                  {inOppose ? <Check className="h-4 w-4 mr-2" /> : <ThumbsDown className="h-4 w-4 mr-2" />}
+                  {inOppose ? 'Opposing' : 'Oppose'}
+                </Button>
                 {company.website && (
                   <a href={company.website} target="_blank" rel="noopener noreferrer">
                     <Button variant="ghost">
@@ -686,6 +702,26 @@ export function CompanyReportView({ report }: CompanyReportProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Login Modal */}
+      <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In Required" size="sm">
+        <div className="text-center">
+          <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ThumbsUp className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            Create a free account to support or oppose companies and track your preferences.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Link href="/signup" onClick={() => setShowLoginModal(false)}>
+              <Button className="w-full">Create Free Account</Button>
+            </Link>
+            <Link href="/login" onClick={() => setShowLoginModal(false)}>
+              <Button variant="outline" className="w-full">Sign In</Button>
+            </Link>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
