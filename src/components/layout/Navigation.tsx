@@ -12,31 +12,50 @@ const navItems = [
   { href: '/browse', label: 'Browse', icon: LayoutGrid },
 ];
 
-// Custom Scale icon with gradient
-function GradientScaleIcon({ className }: { className?: string }) {
+// Custom Templar Cross / Cross Pattée icon with gradient
+function GradientCrossIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="url(#scaleGradient)"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
       className={className}
     >
       <defs>
-        <linearGradient id="scaleGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+        <linearGradient id="crossGradient" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#3b82f6" />
           <stop offset="50%" stopColor="#7c3aed" />
           <stop offset="100%" stopColor="#dc2626" />
         </linearGradient>
       </defs>
-      <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
-      <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z" />
-      <path d="M7 21h10" />
-      <path d="M12 3v18" />
-      <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+      {/* Cross Pattée - arms flare outward with flat ends */}
+      <path
+        fill="url(#crossGradient)"
+        d="M12 2 L14 2 L14 8 L15.5 6 L18 6 L18 8 L22 8 L22 10 L18 10 L18 12 L15.5 12 L14 10 L14 14 L15.5 12 L18 12 L18 14 L22 14 L22 16 L18 16 L18 18 L15.5 18 L14 16 L14 22 L12 22 L10 22 L10 16 L8.5 18 L6 18 L6 16 L2 16 L2 14 L6 14 L6 12 L8.5 12 L10 14 L10 10 L8.5 12 L6 12 L6 10 L2 10 L2 8 L6 8 L6 6 L8.5 6 L10 8 L10 2 L12 2 Z"
+      />
+    </svg>
+  );
+}
+
+// Simpler Cross Pattée design
+function TemplarCrossIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 100 100"
+      className={className}
+    >
+      <defs>
+        <linearGradient id="templarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#3b82f6" />
+          <stop offset="50%" stopColor="#7c3aed" />
+          <stop offset="100%" stopColor="#dc2626" />
+        </linearGradient>
+      </defs>
+      {/* Cross Pattée - flared arms */}
+      <path
+        fill="url(#templarGradient)"
+        d="M42 5 L58 5 L58 35 L68 25 L80 25 L80 42 L95 42 L95 58 L80 58 L80 75 L68 75 L58 65 L58 95 L42 95 L42 65 L32 75 L20 75 L20 58 L5 58 L5 42 L20 42 L20 25 L32 25 L42 35 Z"
+      />
     </svg>
   );
 }
@@ -50,9 +69,9 @@ export function Navigation() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}
-          <Link href="/" className="hidden md:flex items-center space-x-2">
-            <GradientScaleIcon className="h-8 w-8" />
-            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
+          <Link href="/" className="hidden md:flex items-center space-x-3">
+            <TemplarCrossIcon className="h-10 w-10" />
+            <span className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-red-600 bg-clip-text text-transparent">
               Scale
             </span>
           </Link>
