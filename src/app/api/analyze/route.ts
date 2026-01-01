@@ -15,6 +15,36 @@ const CACHE_EXPIRY_DAYS = 30;
 // v5: Use official company name from AI for cache key
 const REPORT_SCHEMA_VERSION = 5;
 
+/**
+ * Sanitize data for Firestore - remove undefined values and convert invalid types
+ */
+function sanitizeForFirestore(obj: unknown): unknown {
+  if (obj === null || obj === undefined) {
+    return null;
+  }
+
+  if (obj instanceof Date) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => sanitizeForFirestore(item)).filter(item => item !== undefined);
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      if (value !== undefined) {
+        sanitized[key] = sanitizeForFirestore(value);
+      }
+    }
+    return sanitized;
+  }
+
+  // Primitive types (string, number, boolean)
+  return obj;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { companyName, forceRefresh } = await request.json();
@@ -165,7 +195,7 @@ export async function POST(request: NextRequest) {
         const existingDoc = await docRef.get();
         const existingSearchCount = existingDoc.exists ? (existingDoc.data()?.searchCount || 0) : 0;
 
-        const reportData = {
+        const reportData = sanitizeForFirestore({
           companyKey: companyKey,
           company: report.company,
           analysis: {
@@ -179,9 +209,9 @@ export async function POST(request: NextRequest) {
           searchCount: existingSearchCount + 1,
           generatedBy: 'ai',
           schemaVersion: REPORT_SCHEMA_VERSION,
-        };
+        });
 
-        await docRef.set(reportData);
+        await docRef.set(reportData as FirebaseFirestore.DocumentData);
 
         report.id = companyKey;
         report.company.id = companyKey;
