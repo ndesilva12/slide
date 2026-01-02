@@ -407,6 +407,71 @@ export function CompanyReportView({ report }: CompanyReportProps) {
         </Card>
       )}
 
+      {/* Revenue Breakdown Section */}
+      {analysis.revenueBreakdown && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('revenue')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <PieChart className="h-5 w-5 text-purple-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Revenue Allocation
+                </h2>
+              </div>
+              {expandedSections.revenue ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.revenue && (
+            <CardContent className="p-4 md:p-6 pt-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Where does the company&apos;s money go? (as % of revenue)
+              </p>
+              <div className="space-y-3">
+                {Object.entries(analysis.revenueBreakdown)
+                  .filter(([key, value]) =>
+                    typeof value === 'number' &&
+                    value > 0 &&
+                    key !== 'fiscalYear'
+                  )
+                  .sort(([, a], [, b]) => (b as number) - (a as number))
+                  .map(([key, value]) => (
+                    <div key={key}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
+                          {revenueLabels[key] || key}
+                        </span>
+                        <span className="text-xs md:text-sm font-medium text-gray-900 dark:text-white">
+                          {value}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className="bg-purple-500 h-2 rounded-full transition-all"
+                          style={{ width: `${Math.min(value as number, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              {analysis.revenueBreakdown.source && (
+                <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
+                  Source: {analysis.revenueBreakdown.source}
+                  {analysis.revenueBreakdown.fiscalYear && ` (FY${analysis.revenueBreakdown.fiscalYear})`}
+                </p>
+              )}
+            </CardContent>
+          )}
+        </Card>
+      )}
+
       {/* Donations Section */}
       {analysis.donations.length > 0 && (
         <Card>
@@ -565,71 +630,6 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                   </div>
                 ))}
               </div>
-            </CardContent>
-          )}
-        </Card>
-      )}
-
-      {/* Revenue Breakdown Section */}
-      {analysis.revenueBreakdown && (
-        <Card>
-          <CardHeader>
-            <button
-              onClick={() => toggleSection('revenue')}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center space-x-2">
-                <PieChart className="h-5 w-5 text-amber-500" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Revenue Allocation
-                </h2>
-              </div>
-              {expandedSections.revenue ? (
-                <ChevronUp className="h-5 w-5 text-gray-400" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-gray-400" />
-              )}
-            </button>
-          </CardHeader>
-
-          {expandedSections.revenue && (
-            <CardContent className="p-4 md:p-6 pt-0">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Where does the company&apos;s money go? (as % of revenue)
-              </p>
-              <div className="space-y-3">
-                {Object.entries(analysis.revenueBreakdown)
-                  .filter(([key, value]) =>
-                    typeof value === 'number' &&
-                    value > 0 &&
-                    key !== 'fiscalYear'
-                  )
-                  .sort(([, a], [, b]) => (b as number) - (a as number))
-                  .map(([key, value]) => (
-                    <div key={key}>
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
-                          {revenueLabels[key] || key}
-                        </span>
-                        <span className="text-xs md:text-sm font-medium text-gray-900 dark:text-white">
-                          {value}%
-                        </span>
-                      </div>
-                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                        <div
-                          className="bg-amber-500 h-2 rounded-full transition-all"
-                          style={{ width: `${Math.min(value as number, 100)}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-              </div>
-              {analysis.revenueBreakdown.source && (
-                <p className="mt-4 text-xs text-gray-400 dark:text-gray-500">
-                  Source: {analysis.revenueBreakdown.source}
-                  {analysis.revenueBreakdown.fiscalYear && ` (FY${analysis.revenueBreakdown.fiscalYear})`}
-                </p>
-              )}
             </CardContent>
           )}
         </Card>
