@@ -99,7 +99,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                     onClick={(e) => handleListAction(e, 'support')}
                     className={`p-1.5 ${
                       inSupport
-                        ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
+                        ? 'border border-green-400/50 dark:border-green-500/40 text-green-600 dark:text-green-400'
                         : user
                           ? 'hover:text-green-600'
                           : 'opacity-50 text-gray-400'
@@ -114,7 +114,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                     onClick={(e) => handleListAction(e, 'oppose')}
                     className={`p-1.5 ${
                       inOppose
-                        ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
+                        ? 'border border-red-400/50 dark:border-red-500/40 text-red-600 dark:text-red-400'
                         : user
                           ? 'hover:text-red-600'
                           : 'opacity-50 text-gray-400'
