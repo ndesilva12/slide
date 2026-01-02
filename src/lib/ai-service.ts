@@ -105,6 +105,8 @@ Return a JSON object with this structure (all arrays can be empty if no data ava
     "confidenceScore": 0-100,
     "summary": "2-3 sentence summary of political stance",
     "politicalCompass": { "x": 0, "y": 0 },
+    "positions": [],
+    "keyAffiliates": [],
     "donations": [],
     "publicStatements": [],
     "partnerships": [],
@@ -118,6 +120,8 @@ Return a JSON object with this structure (all arrays can be empty if no data ava
 
 Field details:
 - politicalCompass: x is Left(-3) to Right(+3), y is Safety/Authoritarian(-3) to Freedom/Libertarian(+3). Set based on regulatory stance, privacy policies, government cooperation.
+- positions: EXACTLY 5 clear, concise political stances (5-10 words each). Each: {stance: "in favor of X" or "against Y" or "supports Z"}. Examples: "supports lower corporate taxes", "against expanded regulation", "in favor of school choice", "supports immigration reform". Focus on the company's most clearly defined political beliefs.
+- keyAffiliates: EXACTLY 5 major companies that do business with or are owned by this company. IMPORTANT: Use DIFFERENT brand names, not variants of the parent company name. For Disney, use ESPN, Hulu, Pixar - NOT "Walt Disney Studios". Each: {name: "Company Name", relationship: "owned by|partner|supplier|distributor|investor"}. These should be well-known, recognizable brands.
 - donations: Include PAC, executive, and employee donations if known. Each: {recipient, party, amount, year, donorType, source}
 - publicStatements: Leadership statements on policy. Each: {date, speaker, role, statement, topic, source, url}
 - partnerships: Political orgs/trade associations. Each: {partnerName, partnerType, politicalLeaning, relevance}
@@ -184,6 +188,8 @@ Include political donations (PAC, executive, employee), public statements on gov
       confidenceScore: parsed.analysis?.confidenceScore || 50,
       summary: parsed.analysis?.summary || 'Analysis pending.',
       politicalCompass: parsed.analysis?.politicalCompass || undefined,
+      positions: Array.isArray(parsed.analysis?.positions) ? parsed.analysis.positions : [],
+      keyAffiliates: Array.isArray(parsed.analysis?.keyAffiliates) ? parsed.analysis.keyAffiliates : [],
       donations: Array.isArray(parsed.analysis?.donations) ? parsed.analysis.donations : [],
       publicStatements: Array.isArray(parsed.analysis?.publicStatements) ? parsed.analysis.publicStatements : [],
       partnerships: Array.isArray(parsed.analysis?.partnerships) ? parsed.analysis.partnerships : [],

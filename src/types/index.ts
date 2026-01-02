@@ -78,6 +78,18 @@ export interface Affiliate {
   ownershipPercent?: number; // for minority stakes
 }
 
+// Political position/stance on an issue
+export interface PoliticalPosition {
+  stance: string; // e.g., "supports tax reform", "against corporate regulation"
+}
+
+// Key affiliate company (for display in analysis section)
+export interface KeyAffiliate {
+  name: string;
+  logoUrl?: string;
+  relationship: string; // e.g., "owned by", "partner", "major supplier"
+}
+
 // Political compass coordinates
 // x: -2 (Left) to +2 (Right)
 // y: -2 (Safety/Authoritarian) to +2 (Freedom/Libertarian)
@@ -91,6 +103,8 @@ export interface PoliticalAnalysis {
   confidenceScore: number; // 0-100
   summary: string;
   politicalCompass?: PoliticalCompass;
+  positions?: PoliticalPosition[]; // 5 key political stances
+  keyAffiliates?: KeyAffiliate[]; // 5 most aligned business affiliates
   donations: PoliticalDonation[];
   publicStatements: PublicStatement[];
   partnerships: Partnership[];

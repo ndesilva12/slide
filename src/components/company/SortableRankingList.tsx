@@ -96,7 +96,7 @@ function SortableItem({ item, index, onClick, isEditable, showCount, countType }
             <img
               src={item.company.logoUrl}
               alt={item.company?.name || item.companyName}
-              className="w-5 h-5 md:w-6 md:h-6 object-contain"
+              className="w-full h-full object-cover"
             />
           ) : (
             <Building2 className="h-4 w-4 md:h-5 md:w-5 text-gray-400" />

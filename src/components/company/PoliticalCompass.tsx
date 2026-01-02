@@ -115,13 +115,13 @@ export function PoliticalCompass({
         {/* Axis labels - positioned outside the box */}
         {showLabels && (
           <>
-            {/* Freedom (top) */}
-            <span className={`absolute top-0 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-400 dark:text-gray-500 font-medium`}>
-              Freedom
+            {/* Less Government (top) */}
+            <span className={`absolute top-0 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap`}>
+              Less Gov
             </span>
-            {/* Safety (bottom) */}
-            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-400 dark:text-gray-500 font-medium`}>
-              Safety
+            {/* More Government (bottom) */}
+            <span className={`absolute bottom-0 left-1/2 -translate-x-1/2 ${labelSizes[size]} text-gray-400 dark:text-gray-500 font-medium whitespace-nowrap`}>
+              More Gov
             </span>
             {/* Left */}
             <span className={`absolute left-0 top-1/2 -translate-y-1/2 ${labelSizes[size]} text-gray-400 dark:text-gray-500 font-medium`}>

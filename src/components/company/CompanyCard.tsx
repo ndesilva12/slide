@@ -51,9 +51,9 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
         <CardContent className="p-4">
           <div className="flex items-start justify-between">
             <div className="flex items-start space-x-3">
-              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {company.logoUrl ? (
-                  <img src={company.logoUrl} alt={company.name} className="w-8 h-8 object-contain" />
+                  <img src={company.logoUrl} alt={company.name} className="w-full h-full object-cover" />
                 ) : (
                   <Building2 className="w-6 h-6 text-gray-400" />
                 )}
@@ -94,34 +94,34 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
               {showListButtons && (
                 <>
                   <Button
-                    variant={inSupport ? 'primary' : 'ghost'}
+                    variant="ghost"
                     size="sm"
                     onClick={(e) => handleListAction(e, 'support')}
                     className={`p-1.5 ${
                       inSupport
-                        ? 'bg-green-600 hover:bg-green-700'
+                        ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20'
                         : user
                           ? 'hover:text-green-600'
                           : 'opacity-50 text-gray-400'
                     }`}
                     title={user ? (inSupport ? 'Remove from Support' : 'Add to Support') : 'Sign in to support'}
                   >
-                    {inSupport ? <Check className="h-4 w-4" /> : <ThumbsUp className="h-4 w-4" />}
+                    <ThumbsUp className="h-4 w-4" />
                   </Button>
                   <Button
-                    variant={inOppose ? 'primary' : 'ghost'}
+                    variant="ghost"
                     size="sm"
                     onClick={(e) => handleListAction(e, 'oppose')}
                     className={`p-1.5 ${
                       inOppose
-                        ? 'bg-red-600 hover:bg-red-700'
+                        ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20'
                         : user
                           ? 'hover:text-red-600'
                           : 'opacity-50 text-gray-400'
                     }`}
                     title={user ? (inOppose ? 'Remove from Oppose' : 'Add to Oppose') : 'Sign in to oppose'}
                   >
-                    {inOppose ? <Check className="h-4 w-4" /> : <ThumbsDown className="h-4 w-4" />}
+                    <ThumbsDown className="h-4 w-4" />
                   </Button>
                 </>
               )}

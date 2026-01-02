@@ -188,7 +188,7 @@ function HomeContent() {
         <div className="text-center pt-2 md:pt-4">
           <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
             Discover Company{' '}
-            <span className="bg-gradient-to-r from-blue-500 via-purple-500 to-red-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
               Politics
             </span>
           </h1>
@@ -253,16 +253,26 @@ function HomeContent() {
             <div className="flex justify-center gap-2">
               {user && (
                 <Button
-                  variant={viewMode === 'my' ? 'primary' : 'ghost'}
+                  variant="ghost"
                   onClick={() => setViewMode('my')}
+                  className={
+                    viewMode === 'my'
+                      ? 'border border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                      : ''
+                  }
                 >
                   <User className="h-4 w-4 mr-2" />
                   My Rankings
                 </Button>
               )}
               <Button
-                variant={viewMode === 'global' ? 'primary' : 'ghost'}
+                variant="ghost"
                 onClick={() => setViewMode('global')}
+                className={
+                  viewMode === 'global'
+                    ? 'border border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                    : ''
+                }
               >
                 <Globe className="h-4 w-4 mr-2" />
                 Global
