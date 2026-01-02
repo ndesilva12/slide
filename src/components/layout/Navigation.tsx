@@ -18,7 +18,7 @@ export function Navigation() {
   const { user, signOut } = useAuth();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-white dark:bg-black border-t md:border-b md:border-t-0 border-gray-200 dark:border-gray-800 z-40">
+    <nav className="fixed bottom-0 left-0 right-0 md:top-0 md:bottom-auto bg-white/95 dark:bg-black/95 backdrop-blur-sm border-t md:border-b md:border-t-0 border-gray-200 dark:border-gray-800 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo - Desktop only */}

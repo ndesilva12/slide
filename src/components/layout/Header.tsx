@@ -14,7 +14,7 @@ export function Header({ title, subtitle }: HeaderProps) {
   const { user } = useAuth();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+    <header className="sticky top-0 z-50 bg-white/95 dark:bg-black/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 md:hidden">
       <div className="px-4 py-2">
         <div className="flex items-center justify-between h-10">
           {/* Always show logo */}

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Building2,
   DollarSign,
@@ -14,6 +14,7 @@ import {
   Network,
   Target,
   Newspaper,
+  Users,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
@@ -35,10 +36,29 @@ export function CompanyReportView({ report }: CompanyReportProps) {
   const { user } = useAuth();
   const { isInSupport, isInOppose, addToList, removeFromList } = useUserLists();
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [endorseCount, setEndorseCount] = useState<number>(0);
+  const [boycottCount, setBoycottCount] = useState<number>(0);
 
   const companyKey = report.companyKey || createCompanyKey(company.name);
   const inSupport = isInSupport(companyKey);
   const inOppose = isInOppose(companyKey);
+
+  // Fetch endorsement/boycott counts
+  useEffect(() => {
+    const fetchCounts = async () => {
+      try {
+        const response = await fetch(`/api/rankings/counts?companyKey=${encodeURIComponent(companyKey)}`);
+        const data = await response.json();
+        if (data.success) {
+          setEndorseCount(data.data.supportCount || 0);
+          setBoycottCount(data.data.opposeCount || 0);
+        }
+      } catch (err) {
+        // Silently fail - counts are optional
+      }
+    };
+    fetchCounts();
+  }, [companyKey]);
 
   const handleListAction = async (listType: 'support' | 'oppose') => {
     if (!user) {
@@ -144,7 +164,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{company.name}</h1>
                     <PoliticalLeaningBadge leaning={analysis.overallLeaning} />
                   </div>
-                  <div className="flex items-center space-x-2 md:space-x-3 mt-1">
+                  <div className="flex items-center space-x-2 md:space-x-3 mt-1 flex-wrap gap-y-1">
                     {company.ticker && (
                       <span className="text-sm text-gray-500 dark:text-gray-400">{company.ticker}</span>
                     )}
@@ -153,6 +173,15 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                     )}
                     <span className="text-sm text-gray-500 dark:text-gray-400">
                       {analysis.confidenceScore}% confidence
+                    </span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+                    <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
+                      <ThumbsUp className="h-3.5 w-3.5" />
+                      {endorseCount}
+                    </span>
+                    <span className="flex items-center gap-1 text-sm text-red-600 dark:text-red-400">
+                      <ThumbsDown className="h-3.5 w-3.5" />
+                      {boycottCount}
                     </span>
                   </div>
                 </div>
@@ -220,23 +249,22 @@ export function CompanyReportView({ report }: CompanyReportProps) {
         </CardContent>
       </Card>
 
-      {/* Analysis Section - Positions & Key Affiliates */}
+      {/* Positions & Affiliates Section */}
       {((analysis.positions && analysis.positions.length > 0) || (analysis.keyAffiliates && analysis.keyAffiliates.length > 0)) && (
         <Card>
           <CardContent className="p-4 md:p-6">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Analysis</h2>
             <div className="grid md:grid-cols-2 gap-4 md:gap-6">
               {/* Positions Column */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Target className="h-4 w-4 text-violet-500" />
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Positions</h3>
+                  <Target className="h-5 w-5 text-violet-500" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Positions</h2>
                 </div>
                 <ul className="space-y-2">
                   {(analysis.positions || []).slice(0, 5).map((position, i) => (
-                    <li key={i} className="flex items-start gap-2">
-                      <span className="text-violet-500 mt-1">•</span>
-                      <span className="text-sm text-gray-700 dark:text-gray-300">
+                    <li key={i} className="flex gap-2">
+                      <span className="text-violet-500 leading-5">•</span>
+                      <span className="text-sm text-gray-700 dark:text-gray-300 leading-5">
                         {position.stance}
                       </span>
                     </li>
@@ -247,11 +275,11 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                 </ul>
               </div>
 
-              {/* Key Affiliates Column */}
+              {/* Affiliates Column */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Network className="h-4 w-4 text-teal-500" />
-                  <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">Key Affiliates</h3>
+                  <Network className="h-5 w-5 text-teal-500" />
+                  <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Affiliates</h2>
                 </div>
                 <div className="space-y-2">
                   {(analysis.keyAffiliates || []).slice(0, 5).map((affiliate, i) => (
