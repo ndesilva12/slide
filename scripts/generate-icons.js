@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const sizes = [72, 96, 128, 144, 152, 180, 192, 384, 512];
-const inputFile = path.join(__dirname, '../public/scale-light.png');
+const inputFile = path.join(__dirname, '../public/scale-dark.png');
 const outputDir = path.join(__dirname, '../public/icons');
 
 // Ensure output directory exists
