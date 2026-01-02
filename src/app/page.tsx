@@ -379,14 +379,14 @@ function HomeContent() {
             {/* My Rankings View */}
             {viewMode === 'my' && user && (
               <div className="grid md:grid-cols-2 gap-3 md:gap-6">
-                {/* Support Column */}
+                {/* Endorse Column */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <ThumbsUp className="h-5 w-5 text-green-600" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Support
+                          Endorse
                         </h3>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           ({lists.support.length})
@@ -411,20 +411,20 @@ function HomeContent() {
                         onReorder={(keys) => handleReorder('support', keys)}
                         onItemClick={handleItemClick}
                         isEditable={editingList === 'support'}
-                        emptyMessage="No companies in your support list"
+                        emptyMessage="No companies in your endorse list"
                       />
                     )}
                   </CardContent>
                 </Card>
 
-                {/* Oppose Column */}
+                {/* Boycott Column */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center justify-between mb-4">
                       <div className="flex items-center gap-2">
                         <ThumbsDown className="h-5 w-5 text-red-600" />
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                          Oppose
+                          Boycott
                         </h3>
                         <span className="text-sm text-gray-500 dark:text-gray-400">
                           ({lists.oppose.length})
@@ -449,7 +449,7 @@ function HomeContent() {
                         onReorder={(keys) => handleReorder('oppose', keys)}
                         onItemClick={handleItemClick}
                         isEditable={editingList === 'oppose'}
-                        emptyMessage="No companies in your oppose list"
+                        emptyMessage="No companies in your boycott list"
                       />
                     )}
                   </CardContent>
@@ -460,13 +460,13 @@ function HomeContent() {
             {/* Global Rankings View */}
             {viewMode === 'global' && (
               <div className="grid md:grid-cols-2 gap-3 md:gap-6">
-                {/* Most Supported Column */}
+                {/* Most Endorsed Column */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <ThumbsUp className="h-5 w-5 text-green-600" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Most Supported
+                        Most Endorsed
                       </h3>
                     </div>
                     {globalLoading ? (
@@ -486,13 +486,13 @@ function HomeContent() {
                   </CardContent>
                 </Card>
 
-                {/* Most Opposed Column */}
+                {/* Most Boycotted Column */}
                 <Card>
                   <CardContent className="p-4">
                     <div className="flex items-center gap-2 mb-4">
                       <ThumbsDown className="h-5 w-5 text-red-600" />
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                        Most Opposed
+                        Most Boycotted
                       </h3>
                     </div>
                     {globalLoading ? (

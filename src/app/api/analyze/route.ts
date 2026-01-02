@@ -15,7 +15,8 @@ const CACHE_EXPIRY_DAYS = 30;
 // v5: Use official company name from AI for cache key
 // v6: Added subsidiaries and affiliates sections
 // v7: Added positions (5 political stances) and keyAffiliates (5 aligned companies)
-const REPORT_SCHEMA_VERSION = 7;
+// v8: Added newsItems (political news headlines), removed partnerships from prompt
+const REPORT_SCHEMA_VERSION = 8;
 
 /**
  * Sanitize data for Firestore - remove undefined values and convert invalid types

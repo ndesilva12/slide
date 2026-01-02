@@ -5,7 +5,6 @@ import {
   Building2,
   DollarSign,
   MessageSquare,
-  Users,
   ExternalLink,
   ThumbsUp,
   ThumbsDown,
@@ -14,6 +13,7 @@ import {
   PieChart,
   Network,
   Target,
+  Newspaper,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
@@ -55,9 +55,9 @@ export function CompanyReportView({ report }: CompanyReportProps) {
   };
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
+    news: true,
     donations: true,
     statements: true,
-    partnerships: false,
     relatedCompanies: true,
     revenue: true,
   });
@@ -178,7 +178,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                   }
                 >
                   <ThumbsUp className="h-4 w-4 mr-1.5" />
-                  {inSupport ? 'Supporting' : 'Support'}
+                  {inSupport ? 'Endorsed' : 'Endorse'}
                 </Button>
                 <Button
                   variant="outline"
@@ -193,7 +193,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                   }
                 >
                   <ThumbsDown className="h-4 w-4 mr-1.5" />
-                  {inOppose ? 'Opposing' : 'Oppose'}
+                  {inOppose ? 'Boycotting' : 'Boycott'}
                 </Button>
                 {company.website && (
                   <a href={company.website} target="_blank" rel="noopener noreferrer">
@@ -281,7 +281,67 @@ export function CompanyReportView({ report }: CompanyReportProps) {
         </Card>
       )}
 
-      {/* Public Statements Section - moved up */}
+      {/* News Section */}
+      {analysis.newsItems && analysis.newsItems.length > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('news')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <Newspaper className="h-5 w-5 text-orange-500" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  News
+                </h2>
+                <Badge variant="default">{analysis.newsItems.length}</Badge>
+              </div>
+              {expandedSections.news ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.news && (
+            <CardContent className="p-4 md:p-6 pt-0">
+              <div className="space-y-2">
+                {analysis.newsItems.map((item, i) => (
+                  <a
+                    key={i}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
+                        {item.headline}
+                      </p>
+                      <ExternalLink className="h-4 w-4 text-gray-400 flex-shrink-0 mt-0.5" />
+                    </div>
+                    <div className="flex items-center gap-2 mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+                      <span>{item.source}</span>
+                      {item.date && (
+                        <>
+                          <span>•</span>
+                          <span>{item.date}</span>
+                        </>
+                      )}
+                      {item.topic && (
+                        <Badge variant="default" size="sm">{item.topic}</Badge>
+                      )}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {/* Public Statements Section */}
       {analysis.publicStatements.length > 0 && (
         <Card>
           <CardHeader>
@@ -510,59 +570,6 @@ export function CompanyReportView({ report }: CompanyReportProps) {
         </Card>
       )}
 
-      {/* Partnerships Section */}
-      {analysis.partnerships.length > 0 && (
-        <Card>
-          <CardHeader>
-            <button
-              onClick={() => toggleSection('partnerships')}
-              className="w-full flex items-center justify-between"
-            >
-              <div className="flex items-center space-x-2">
-                <Users className="h-5 w-5 text-purple-500" />
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Political Partnerships
-                </h2>
-                <Badge variant="default">{analysis.partnerships.length}</Badge>
-              </div>
-              {expandedSections.partnerships ? (
-                <ChevronUp className="h-5 w-5 text-gray-400" />
-              ) : (
-                <ChevronDown className="h-5 w-5 text-gray-400" />
-              )}
-            </button>
-          </CardHeader>
-
-          {expandedSections.partnerships && (
-            <CardContent className="p-4 md:p-6 pt-0">
-              <div className="space-y-2 md:space-y-3">
-                {analysis.partnerships.map((partner, i) => (
-                  <div
-                    key={i}
-                    className="p-3 md:p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-sm md:text-base text-gray-900 dark:text-white">
-                          {partner.partnerName}
-                        </p>
-                        <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400">
-                          {partner.partnerType}
-                        </p>
-                      </div>
-                      {partner.politicalLeaning && (
-                        <Badge variant="default">{partner.politicalLeaning}</Badge>
-                      )}
-                    </div>
-                    <p className="mt-2 text-xs md:text-sm text-gray-600 dark:text-gray-300">{partner.relevance}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          )}
-        </Card>
-      )}
-
       {/* Revenue Breakdown Section */}
       {analysis.revenueBreakdown && (
         <Card>
@@ -671,7 +678,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
             <ThumbsUp className="h-6 w-6 text-violet-600 dark:text-violet-400" />
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Create a free account to support or oppose companies and track your preferences.
+            Create a free account to endorse or boycott companies and track your preferences.
           </p>
           <div className="flex flex-col gap-3">
             <Link href="/signup" onClick={() => setShowLoginModal(false)}>

@@ -107,9 +107,9 @@ Return a JSON object with this structure (all arrays can be empty if no data ava
     "politicalCompass": { "x": 0, "y": 0 },
     "positions": [],
     "keyAffiliates": [],
+    "newsItems": [],
     "donations": [],
     "publicStatements": [],
-    "partnerships": [],
     "subsidiaries": [],
     "affiliates": [],
     "revenueBreakdown": null,
@@ -122,9 +122,9 @@ Field details:
 - politicalCompass: x is Left(-3) to Right(+3), y is Safety/Authoritarian(-3) to Freedom/Libertarian(+3). Set based on regulatory stance, privacy policies, government cooperation.
 - positions: EXACTLY 5 clear, concise political stances (5-10 words each). Each: {stance: "in favor of X" or "against Y" or "supports Z"}. Examples: "supports lower corporate taxes", "against expanded regulation", "in favor of school choice", "supports immigration reform". Focus on the company's most clearly defined political beliefs.
 - keyAffiliates: EXACTLY 5 major companies that do business with or are owned by this company. IMPORTANT: Use DIFFERENT brand names, not variants of the parent company name. For Disney, use ESPN, Hulu, Pixar - NOT "Walt Disney Studios". Each: {name: "Company Name", relationship: "owned by|partner|supplier|distributor|investor"}. These should be well-known, recognizable brands.
+- newsItems: MINIMUM 3 recent news headlines about the company's political positions, controversial stances, or policy-related actions. Each: {headline: "Concise headline", source: "News outlet or X (@username)", url: "https://...", date: "YYYY-MM-DD", topic: "topic"}. Include real, verifiable news articles or notable X/Twitter posts. Focus on political, regulatory, or controversial business positions.
 - donations: Include PAC, executive, and employee donations if known. Each: {recipient, party, amount, year, donorType, source}
 - publicStatements: Leadership statements on policy. Each: {date, speaker, role, statement, topic, source, url}
-- partnerships: Political orgs/trade associations. Each: {partnerName, partnerType, politicalLeaning, relevance}
 - subsidiaries: Owned brands, companies, or divisions. Each: {name, type: "subsidiary"|"brand"|"division", description, ownershipPercent}. Include major owned entities.
 - affiliates: Business partners, investors, joint ventures, suppliers, distributors, licensees, or collaborations. Each: {name, relationshipType: "partner"|"investor"|"joint_venture"|"supplier"|"distributor"|"licensee"|"collaboration", description, ownershipPercent}. Include notable business relationships.
 - revenueBreakdown: If available from SEC filings, include percentages for executiveCompensation, employeeWages, operatingExpenses, researchAndDevelopment, marketing, stockBuybacks, dividends, capitalExpenditures, charitableDonations, lobbyingAndPolitical, netProfit, source, fiscalYear. Otherwise null.
@@ -190,6 +190,7 @@ Include political donations (PAC, executive, employee), public statements on gov
       politicalCompass: parsed.analysis?.politicalCompass || undefined,
       positions: Array.isArray(parsed.analysis?.positions) ? parsed.analysis.positions : [],
       keyAffiliates: Array.isArray(parsed.analysis?.keyAffiliates) ? parsed.analysis.keyAffiliates : [],
+      newsItems: Array.isArray(parsed.analysis?.newsItems) ? parsed.analysis.newsItems : [],
       donations: Array.isArray(parsed.analysis?.donations) ? parsed.analysis.donations : [],
       publicStatements: Array.isArray(parsed.analysis?.publicStatements) ? parsed.analysis.publicStatements : [],
       partnerships: Array.isArray(parsed.analysis?.partnerships) ? parsed.analysis.partnerships : [],

@@ -72,7 +72,7 @@ export function AddToListButton({
         ) : (
           <ThumbsUp className={iconSize} />
         )}
-        {showLabels && <span className="ml-1">{isInSupport ? 'Supporting' : 'Support'}</span>}
+        {showLabels && <span className="ml-1">{isInSupport ? 'Endorsed' : 'Endorse'}</span>}
       </Button>
 
       <Button
@@ -87,7 +87,7 @@ export function AddToListButton({
         ) : (
           <ThumbsDown className={iconSize} />
         )}
-        {showLabels && <span className="ml-1">{isInOppose ? 'Opposing' : 'Oppose'}</span>}
+        {showLabels && <span className="ml-1">{isInOppose ? 'Boycotting' : 'Boycott'}</span>}
       </Button>
     </div>
   );

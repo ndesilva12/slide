@@ -62,6 +62,15 @@ export interface Partnership {
   relevance: string;
 }
 
+// News item about company's political/controversial positions
+export interface NewsItem {
+  headline: string;
+  source: string; // e.g., "Reuters", "X (@username)"
+  url: string;
+  date?: string;
+  topic?: string;
+}
+
 // Subsidiary or owned brand
 export interface Subsidiary {
   name: string;
@@ -105,6 +114,7 @@ export interface PoliticalAnalysis {
   politicalCompass?: PoliticalCompass;
   positions?: PoliticalPosition[]; // 5 key political stances
   keyAffiliates?: KeyAffiliate[]; // 5 most aligned business affiliates
+  newsItems?: NewsItem[]; // Recent news about political/controversial positions
   donations: PoliticalDonation[];
   publicStatements: PublicStatement[];
   partnerships: Partnership[];

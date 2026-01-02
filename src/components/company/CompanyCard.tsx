@@ -104,7 +104,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                           ? 'hover:text-green-600'
                           : 'opacity-50 text-gray-400'
                     }`}
-                    title={user ? (inSupport ? 'Remove from Support' : 'Add to Support') : 'Sign in to support'}
+                    title={user ? (inSupport ? 'Remove from Endorse' : 'Endorse') : 'Sign in to endorse'}
                   >
                     <ThumbsUp className="h-4 w-4" />
                   </Button>
@@ -119,7 +119,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                           ? 'hover:text-red-600'
                           : 'opacity-50 text-gray-400'
                     }`}
-                    title={user ? (inOppose ? 'Remove from Oppose' : 'Add to Oppose') : 'Sign in to oppose'}
+                    title={user ? (inOppose ? 'Remove from Boycott' : 'Boycott') : 'Sign in to boycott'}
                   >
                     <ThumbsDown className="h-4 w-4" />
                   </Button>
@@ -148,7 +148,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
             <ThumbsUp className="h-6 w-6 text-violet-600 dark:text-violet-400" />
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
-            Create a free account to support or oppose companies and track your preferences.
+            Create a free account to endorse or boycott companies and track your preferences.
           </p>
           <div className="flex flex-col gap-3">
             <Link href="/signup" onClick={() => setShowLoginModal(false)}>
