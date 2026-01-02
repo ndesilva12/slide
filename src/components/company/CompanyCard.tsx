@@ -131,7 +131,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                  className="p-1 text-gray-400 hover:text-purple-500 transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </a>

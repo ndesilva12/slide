@@ -22,9 +22,9 @@ export function Button({
     'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const variants = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
+    primary: 'bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 text-white hover:from-indigo-600 hover:via-purple-600 hover:to-fuchsia-600 focus:ring-purple-500',
     secondary: 'bg-gray-600 text-white hover:bg-gray-700 focus:ring-gray-500',
-    outline: 'border-2 border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-800',
+    outline: 'border border-gray-200 dark:border-gray-700 text-gray-700 hover:bg-gray-50 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm',
     ghost: 'text-gray-700 hover:bg-gray-100 focus:ring-gray-500 dark:text-gray-300 dark:hover:bg-gray-800',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
   };

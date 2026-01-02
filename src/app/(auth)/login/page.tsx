@@ -51,11 +51,17 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8">
-          <Link href="/" className="inline-flex items-center space-x-2">
-            <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-xl">P</span>
-            </div>
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">PolitiTrack</span>
+          <Link href="/" className="inline-block">
+            <img
+              src="/scale-light.png"
+              alt="Scale"
+              className="h-10 dark:hidden mx-auto"
+            />
+            <img
+              src="/scale-dark.png"
+              alt="Scale"
+              className="h-10 hidden dark:block mx-auto"
+            />
           </Link>
         </div>
 
@@ -123,7 +129,7 @@ export default function LoginPage() {
 
             <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
               Don&apos;t have an account?{' '}
-              <Link href="/signup" className="text-blue-600 hover:underline font-medium">
+              <Link href="/signup" className="text-purple-600 hover:underline font-medium">
                 Sign up
               </Link>
             </p>

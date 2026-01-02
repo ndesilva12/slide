@@ -36,13 +36,13 @@ export function SearchBar({ onSearch, isLoading = false, placeholder = 'Search f
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
           className="
-            w-full pl-10 md:pl-12 pr-20 md:pr-24 py-3 md:py-4 text-base md:text-lg
+            w-full pl-10 md:pl-12 pr-24 md:pr-28 py-3 md:py-4 text-base md:text-lg
             bg-white dark:bg-gray-800
             border-2 border-gray-200 dark:border-gray-700
             rounded-xl md:rounded-2xl
             text-gray-900 dark:text-white
             placeholder-gray-400 dark:placeholder-gray-500
-            focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20
+            focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20
             transition-all
           "
           disabled={isLoading}
@@ -51,7 +51,7 @@ export function SearchBar({ onSearch, isLoading = false, placeholder = 'Search f
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-16 md:right-20 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+            className="absolute right-20 md:right-24 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
           >
             <X className="h-4 w-4 md:h-5 md:w-5" />
           </button>

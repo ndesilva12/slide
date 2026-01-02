@@ -81,7 +81,7 @@ function SortableItem({ item, index, onClick, isEditable, showCount, countType }
         className={`
           flex-1 flex items-center gap-2 md:gap-3 p-2 md:p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700
           ${isDragging ? 'shadow-lg opacity-90' : 'shadow-sm'}
-          ${isEditable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer hover:border-blue-400'}
+          ${isEditable ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer hover:border-purple-400'}
         `}
       >
         {isEditable && (

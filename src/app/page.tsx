@@ -23,6 +23,7 @@ interface RankingItem {
     name: string;
     ticker?: string;
     industry?: string;
+    logoUrl?: string;
   };
   analysis?: {
     overallLeaning?: string;
@@ -49,6 +50,7 @@ function HomeContent() {
   const [globalRankings, setGlobalRankings] = useState<GlobalRankings>({ support: [], oppose: [] });
   const [globalLoading, setGlobalLoading] = useState(false);
   const [editingList, setEditingList] = useState<'support' | 'oppose' | null>(null);
+  const [enrichedMyRankings, setEnrichedMyRankings] = useState<{ support: RankingItem[]; oppose: RankingItem[] }>({ support: [], oppose: [] });
 
   // Check for report from Browse page on mount
   useEffect(() => {
@@ -96,6 +98,69 @@ function HomeContent() {
       fetchGlobalRankings();
     }
   }, [viewMode, fetchGlobalRankings]);
+
+  // Fetch enriched data for My Rankings (logos, tickers, etc.)
+  useEffect(() => {
+    const enrichMyRankings = async () => {
+      if (!user || lists.support.length === 0 && lists.oppose.length === 0) {
+        setEnrichedMyRankings({ support: [], oppose: [] });
+        return;
+      }
+
+      // Get all unique company keys
+      const allKeys = [...new Set([
+        ...lists.support.map(item => item.companyKey),
+        ...lists.oppose.map(item => item.companyKey),
+      ])];
+
+      // Fetch report data for all companies
+      const reportData: Record<string, { company?: RankingItem['company']; analysis?: RankingItem['analysis'] }> = {};
+
+      await Promise.all(
+        allKeys.map(async (companyKey) => {
+          try {
+            const response = await fetch(`/api/report/${encodeURIComponent(companyKey)}`);
+            const data = await response.json();
+            if (data.success && data.data) {
+              reportData[companyKey] = {
+                company: {
+                  name: data.data.company?.name,
+                  ticker: data.data.company?.ticker,
+                  industry: data.data.company?.industry,
+                  logoUrl: data.data.company?.logoUrl,
+                },
+                analysis: {
+                  overallLeaning: data.data.analysis?.overallLeaning,
+                },
+              };
+            }
+          } catch (err) {
+            // Silently fail for individual companies
+          }
+        })
+      );
+
+      // Enrich the ranking items
+      setEnrichedMyRankings({
+        support: lists.support.slice(0, 10).map((item, index) => ({
+          companyKey: item.companyKey,
+          companyName: item.companyName,
+          rank: index + 1,
+          company: reportData[item.companyKey]?.company,
+          analysis: reportData[item.companyKey]?.analysis,
+        })),
+        oppose: lists.oppose.slice(0, 10).map((item, index) => ({
+          companyKey: item.companyKey,
+          companyName: item.companyName,
+          rank: index + 1,
+          company: reportData[item.companyKey]?.company,
+          analysis: reportData[item.companyKey]?.analysis,
+        })),
+      });
+    };
+
+    enrichMyRankings();
+  }, [user, lists.support, lists.oppose]);
 
   const handleSearch = async (query: string) => {
     setIsLoading(true);
@@ -166,18 +231,22 @@ function HomeContent() {
     await reorderList(listType, orderedKeys);
   };
 
-  // Convert user lists to ranking items
-  const mySupport: RankingItem[] = lists.support.slice(0, 10).map((item, index) => ({
-    companyKey: item.companyKey,
-    companyName: item.companyName,
-    rank: index + 1,
-  }));
+  // Use enriched rankings if available, otherwise fall back to basic list data
+  const mySupport: RankingItem[] = enrichedMyRankings.support.length > 0
+    ? enrichedMyRankings.support
+    : lists.support.slice(0, 10).map((item, index) => ({
+        companyKey: item.companyKey,
+        companyName: item.companyName,
+        rank: index + 1,
+      }));
 
-  const myOppose: RankingItem[] = lists.oppose.slice(0, 10).map((item, index) => ({
-    companyKey: item.companyKey,
-    companyName: item.companyName,
-    rank: index + 1,
-  }));
+  const myOppose: RankingItem[] = enrichedMyRankings.oppose.length > 0
+    ? enrichedMyRankings.oppose
+    : lists.oppose.slice(0, 10).map((item, index) => ({
+        companyKey: item.companyKey,
+        companyName: item.companyName,
+        rank: index + 1,
+      }));
 
   const showRankings = !currentReport && !isLoading && !error;
 
@@ -213,9 +282,14 @@ function HomeContent() {
                 {loadingMessage || 'Loading...'}
               </p>
               {loadingMessage === 'Analyzing company...' && (
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  Searching public records, news, and donation databases
-                </p>
+                <>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Searching public records, news, and donation databases
+                  </p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+                    This can take up to 10 or 15 seconds
+                  </p>
+                </>
               )}
             </div>
           </div>
