@@ -25,14 +25,14 @@ export function Navigation() {
           <Link href="/" className="hidden md:flex items-center h-full py-2">
             {/* Light theme logo (black text) */}
             <img
-              src="/scale-light.png"
-              alt="Scale"
+              src="/demand-light.png"
+              alt="Demand"
               className="h-full max-h-12 dark:hidden"
             />
             {/* Dark theme logo (white text) */}
             <img
-              src="/scale-dark.png"
-              alt="Scale"
+              src="/demand-dark.png"
+              alt="Demand"
               className="h-full max-h-12 hidden dark:block"
             />
           </Link>

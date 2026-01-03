@@ -4,13 +4,13 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { UserListsProvider } from '@/contexts/UserListsContext';
 
 export const metadata: Metadata = {
-  title: 'Scale - Company Political Analysis',
+  title: 'Demand - Company Political Analysis',
   description: 'Discover the political affiliations, donations, and positions of companies based on public records and news.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'Scale',
+    title: 'Demand',
   },
   formatDetection: {
     telephone: false,
@@ -23,6 +23,25 @@ export const metadata: Metadata = {
     apple: [
       { url: '/icons/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
     ],
+  },
+  openGraph: {
+    title: 'Demand - Company Political Analysis',
+    description: 'Discover the political affiliations, donations, and positions of companies based on public records and news.',
+    images: [
+      {
+        url: '/demand-dark-big.png',
+        width: 1200,
+        height: 630,
+        alt: 'Demand',
+      },
+    ],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Demand - Company Political Analysis',
+    description: 'Discover the political affiliations, donations, and positions of companies based on public records and news.',
+    images: ['/demand-dark-big.png'],
   },
 };
 

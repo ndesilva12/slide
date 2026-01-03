@@ -20,13 +20,13 @@ export function Header({ title, subtitle }: HeaderProps) {
           {/* Always show logo */}
           <Link href="/" className="flex items-center h-full">
             <img
-              src="/scale-light.png"
-              alt="Scale"
+              src="/demand-light.png"
+              alt="Demand"
               className="h-full max-h-8 dark:hidden"
             />
             <img
-              src="/scale-dark.png"
-              alt="Scale"
+              src="/demand-dark.png"
+              alt="Demand"
               className="h-full max-h-8 hidden dark:block"
             />
           </Link>

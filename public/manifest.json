@@ -1,6 +1,6 @@
 {
-  "name": "Scale - Company Political Analysis",
-  "short_name": "Scale",
+  "name": "Demand - Company Political Analysis",
+  "short_name": "Demand",
   "description": "Discover the political affiliations, donations, and positions of companies",
   "start_url": "/",
   "display": "standalone",

@@ -53,13 +53,13 @@ export default function LoginPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-block">
             <img
-              src="/scale-light.png"
-              alt="Scale"
+              src="/demand-light.png"
+              alt="Demand"
               className="h-10 dark:hidden mx-auto"
             />
             <img
-              src="/scale-dark.png"
-              alt="Scale"
+              src="/demand-dark.png"
+              alt="Demand"
               className="h-10 hidden dark:block mx-auto"
             />
           </Link>
