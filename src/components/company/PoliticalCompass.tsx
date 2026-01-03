@@ -27,9 +27,9 @@ function getLeaningColor(leaning?: string): { bg: string; text: string; border: 
       };
     case 'Center':
       return {
-        bg: 'bg-purple-100 dark:bg-purple-900/30',
-        text: 'text-purple-600 dark:text-purple-400',
-        border: 'border-purple-300 dark:border-purple-700'
+        bg: 'bg-[#741b47]/10 dark:bg-[#741b47]/20',
+        text: 'text-[#741b47] dark:text-[#d4619a]',
+        border: 'border-[#741b47]/30 dark:border-[#741b47]/50'
       };
     case 'Center-Right':
       return {
@@ -45,9 +45,9 @@ function getLeaningColor(leaning?: string): { bg: string; text: string; border: 
       };
     default:
       return {
-        bg: 'bg-purple-50 dark:bg-purple-900/20',
-        text: 'text-purple-600 dark:text-purple-400',
-        border: 'border-purple-200 dark:border-purple-800'
+        bg: 'bg-[#741b47]/5 dark:bg-[#741b47]/10',
+        text: 'text-[#741b47] dark:text-[#d4619a]',
+        border: 'border-[#741b47]/20 dark:border-[#741b47]/40'
       };
   }
 }

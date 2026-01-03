@@ -50,7 +50,7 @@ export function Navigation() {
                     flex flex-col md:flex-row items-center justify-center px-4 py-2 rounded-lg
                     transition-colors
                     ${isActive
-                      ? 'text-violet-700 dark:text-violet-400 bg-violet-100 dark:bg-violet-900/30'
+                      ? 'text-[#741b47] dark:text-[#d4619a] bg-[#741b47]/10 dark:bg-[#741b47]/20'
                       : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
                     }
                   `}

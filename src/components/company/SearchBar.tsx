@@ -42,7 +42,7 @@ export function SearchBar({ onSearch, isLoading = false, placeholder = 'Search f
             rounded-xl md:rounded-2xl
             text-gray-900 dark:text-white
             placeholder-gray-400 dark:placeholder-gray-500
-            focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/20
+            focus:outline-none focus:border-[#741b47] focus:ring-2 focus:ring-[#741b47]/20
             transition-all
           "
           disabled={isLoading}

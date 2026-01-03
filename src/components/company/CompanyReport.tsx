@@ -257,13 +257,13 @@ export function CompanyReportView({ report }: CompanyReportProps) {
               {/* Positions Column */}
               <div>
                 <div className="flex items-center gap-2 mb-3">
-                  <Target className="h-5 w-5 text-violet-500" />
+                  <Target className="h-5 w-5 text-[#741b47]" />
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Positions</h2>
                 </div>
                 <ul className="space-y-2">
                   {(analysis.positions || []).slice(0, 5).map((position, i) => (
                     <li key={i} className="flex gap-2">
-                      <span className="text-violet-500 leading-5">•</span>
+                      <span className="text-[#741b47] leading-5">•</span>
                       <span className="text-sm text-gray-700 dark:text-gray-300 leading-5">
                         {position.stance}
                       </span>
@@ -341,7 +341,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-purple-400 dark:hover:border-purple-500 transition-colors"
+                    className="block p-3 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-[#741b47] dark:hover:border-[#9b2761] transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium text-gray-900 dark:text-white line-clamp-2">
@@ -444,7 +444,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
               className="w-full flex items-center justify-between"
             >
               <div className="flex items-center space-x-2">
-                <PieChart className="h-5 w-5 text-purple-500" />
+                <PieChart className="h-5 w-5 text-[#741b47]" />
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Revenue Allocation
                 </h2>
@@ -482,7 +482,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                       </div>
                       <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                         <div
-                          className="bg-purple-500 h-2 rounded-full transition-all"
+                          className="bg-[#741b47] h-2 rounded-full transition-all"
                           style={{ width: `${Math.min(value as number, 100)}%` }}
                         />
                       </div>
@@ -702,8 +702,8 @@ export function CompanyReportView({ report }: CompanyReportProps) {
       {/* Login Modal */}
       <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In Required" size="sm">
         <div className="text-center">
-          <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ThumbsUp className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+          <div className="w-12 h-12 bg-[#741b47]/10 dark:bg-[#741b47]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ThumbsUp className="h-6 w-6 text-[#741b47] dark:text-[#d4619a]" />
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Create a free account to endorse or boycott companies and track your preferences.

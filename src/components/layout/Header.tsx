@@ -45,7 +45,7 @@ export function Header({ title, subtitle }: HeaderProps) {
               </div>
             </div>
           ) : (
-            <Link href="/login" className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+            <Link href="/login" className="text-sm text-[#741b47] dark:text-[#d4619a] font-medium">
               Sign In
             </Link>
           )}

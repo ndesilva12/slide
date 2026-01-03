@@ -257,7 +257,7 @@ function HomeContent() {
         <div className="text-center pt-2 md:pt-4">
           <h1 className="text-2xl md:text-4xl font-bold text-gray-900 dark:text-white mb-1 md:mb-2">
             Discover Company{' '}
-            <span className="bg-gradient-to-r from-indigo-500 via-purple-500 to-fuchsia-500 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-[#5a1538] via-[#741b47] to-[#9b2761] bg-clip-text text-transparent">
               Politics
             </span>
           </h1>
@@ -331,7 +331,7 @@ function HomeContent() {
                   onClick={() => setViewMode('my')}
                   className={
                     viewMode === 'my'
-                      ? 'border border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                      ? 'border border-[#741b47]/30 dark:border-[#741b47]/60 bg-[#741b47]/10 dark:bg-[#741b47]/20 text-[#741b47] dark:text-[#d4619a]'
                       : ''
                   }
                 >
@@ -344,7 +344,7 @@ function HomeContent() {
                 onClick={() => setViewMode('global')}
                 className={
                   viewMode === 'global'
-                    ? 'border border-purple-300 dark:border-purple-600 bg-purple-50/50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300'
+                    ? 'border border-[#741b47]/30 dark:border-[#741b47]/60 bg-[#741b47]/10 dark:bg-[#741b47]/20 text-[#741b47] dark:text-[#d4619a]'
                     : ''
                 }
               >

@@ -131,7 +131,7 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="p-1 text-gray-400 hover:text-purple-500 transition-colors"
+                  className="p-1 text-gray-400 hover:text-[#741b47] transition-colors"
                 >
                   <ExternalLink className="h-4 w-4" />
                 </a>
@@ -144,8 +144,8 @@ export function CompanyCard({ report, onClick, showListButtons = true }: Company
       {/* Login Modal */}
       <Modal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} title="Sign In Required" size="sm">
         <div className="text-center">
-          <div className="w-12 h-12 bg-violet-100 dark:bg-violet-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
-            <ThumbsUp className="h-6 w-6 text-violet-600 dark:text-violet-400" />
+          <div className="w-12 h-12 bg-[#741b47]/10 dark:bg-[#741b47]/20 rounded-full flex items-center justify-center mx-auto mb-4">
+            <ThumbsUp className="h-6 w-6 text-[#741b47] dark:text-[#d4619a]" />
           </div>
           <p className="text-gray-600 dark:text-gray-300 mb-6">
             Create a free account to endorse or boycott companies and track your preferences.
