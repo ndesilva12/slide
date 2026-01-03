@@ -164,3 +164,52 @@ export interface ApiResponse<T> {
   data?: T;
   error?: string;
 }
+
+// Demand/Petition types
+export type DemandCategory =
+  | 'Environmental'
+  | 'Labor Rights'
+  | 'Corporate Governance'
+  | 'Consumer Protection'
+  | 'Social Justice'
+  | 'Political Transparency'
+  | 'Privacy & Data'
+  | 'Other';
+
+export interface Demand {
+  id: string;
+  title: string;
+  category: DemandCategory;
+  description: string; // The full essay/paragraph explaining the demand
+  targetCompany?: string; // Optional: specific company being targeted
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string;
+  coSignCount: number;
+  commentCount: number;
+  createdAt: Date;
+  updatedAt: Date;
+  status: 'active' | 'closed' | 'achieved';
+}
+
+export interface DemandCoSigner {
+  id: string;
+  demandId: string;
+  userId: string;
+  userName: string;
+  userPhotoURL?: string;
+  coSignedAt: Date;
+}
+
+export interface DemandComment {
+  id: string;
+  demandId: string;
+  authorId: string;
+  authorName: string;
+  authorPhotoURL?: string;
+  content: string;
+  createdAt: Date;
+  updatedAt: Date;
+  parentId?: string; // For threaded replies
+  likeCount: number;
+}

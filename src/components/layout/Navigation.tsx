@@ -4,13 +4,14 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { Search, LayoutGrid, User, LogOut } from 'lucide-react';
+import { Search, LayoutGrid, Megaphone, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/Button';
 
 const navItems = [
   { href: '/', label: 'Search', icon: Search },
   { href: '/browse', label: 'Browse', icon: LayoutGrid },
+  { href: '/demands', label: 'Demands', icon: Megaphone },
 ];
 
 export function Navigation() {
