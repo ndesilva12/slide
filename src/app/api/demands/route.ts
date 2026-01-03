@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '@/lib/firebase-admin';
-import { Demand, DemandCategory } from '@/types';
+import { Demand, DemandCategory, ResolutionItem } from '@/types';
+
+// Helper to generate company key from name
+function generateCompanyKey(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
 
 // GET - Fetch demands with optional search/filter
 export async function GET(request: NextRequest) {
@@ -9,6 +14,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search')?.toLowerCase();
     const category = searchParams.get('category') as DemandCategory | null;
     const status = searchParams.get('status') as Demand['status'] | null;
+    const targetCompanyKey = searchParams.get('targetCompanyKey'); // For company report integration
     const sortBy = searchParams.get('sortBy') || 'recent'; // recent, popular, trending
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = parseInt(searchParams.get('offset') || '0');
@@ -21,13 +27,17 @@ export async function GET(request: NextRequest) {
     let query: FirebaseFirestore.Query = db.collection('demands');
 
     // Apply filters
+    if (targetCompanyKey) {
+      // Filter by specific company (for company report integration)
+      query = query.where('targetCompanyKey', '==', targetCompanyKey);
+    }
     if (category) {
       query = query.where('category', '==', category);
     }
     if (status) {
       query = query.where('status', '==', status);
-    } else {
-      // Default to active demands
+    } else if (!targetCompanyKey) {
+      // Default to active demands (unless filtering by company)
       query = query.where('status', '==', 'active');
     }
 
@@ -57,7 +67,9 @@ export async function GET(request: NextRequest) {
         title: data.title,
         category: data.category,
         description: data.description,
+        resolutionItems: data.resolutionItems || [],
         targetCompany: data.targetCompany,
+        targetCompanyKey: data.targetCompanyKey,
         authorId: data.authorId,
         authorName: data.authorName,
         authorPhotoURL: data.authorPhotoURL,
@@ -102,12 +114,19 @@ export async function GET(request: NextRequest) {
 // POST - Create a new demand
 export async function POST(request: NextRequest) {
   try {
-    const { title, category, description, targetCompany, authorId, authorName, authorPhotoURL } =
+    const { title, category, description, targetCompany, resolutionItems, authorId, authorName, authorPhotoURL } =
       await request.json();
 
     if (!title || !category || !description || !authorId || !authorName) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
+        { status: 400 }
+      );
+    }
+
+    if (!resolutionItems || !Array.isArray(resolutionItems) || resolutionItems.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'At least one resolution item is required' },
         { status: 400 }
       );
     }
@@ -121,11 +140,21 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date();
+
+    // Convert resolution items to proper format with IDs
+    const formattedResolutionItems: ResolutionItem[] = resolutionItems.map((text: string, index: number) => ({
+      id: `res_${Date.now()}_${index}`,
+      text,
+      isCompleted: false,
+    }));
+
     const demandData = {
       title,
       category,
       description,
+      resolutionItems: formattedResolutionItems,
       targetCompany: targetCompany || null,
+      targetCompanyKey: targetCompany ? generateCompanyKey(targetCompany) : null,
       authorId,
       authorName,
       authorPhotoURL: authorPhotoURL || null,

@@ -167,6 +167,15 @@ export interface ApiResponse<T> {
 
 // Demand/Petition types
 export type DemandCategory =
+  // Business & Customer categories
+  | 'Pricing'
+  | 'Products & Services'
+  | 'Locations'
+  | 'Customer Experience'
+  | 'Policies'
+  | 'Partnerships'
+  | 'Employee Treatment'
+  // Social & Political categories
   | 'Environmental'
   | 'Labor Rights'
   | 'Corporate Governance'
@@ -176,12 +185,21 @@ export type DemandCategory =
   | 'Privacy & Data'
   | 'Other';
 
+export interface ResolutionItem {
+  id: string;
+  text: string;
+  isCompleted: boolean;
+  completedAt?: Date;
+}
+
 export interface Demand {
   id: string;
   title: string;
   category: DemandCategory;
   description: string; // The full essay/paragraph explaining the demand
+  resolutionItems: ResolutionItem[]; // Actionable items for the demand to be considered met
   targetCompany?: string; // Optional: specific company being targeted
+  targetCompanyKey?: string; // Normalized company name for matching
   authorId: string;
   authorName: string;
   authorPhotoURL?: string;

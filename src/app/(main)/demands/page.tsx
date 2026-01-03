@@ -24,6 +24,15 @@ import {
 
 const CATEGORIES: (DemandCategory | 'All')[] = [
   'All',
+  // Business & Customer
+  'Pricing',
+  'Products & Services',
+  'Locations',
+  'Customer Experience',
+  'Policies',
+  'Partnerships',
+  'Employee Treatment',
+  // Social & Political
   'Environmental',
   'Labor Rights',
   'Corporate Governance',
@@ -97,6 +106,7 @@ export default function DemandsPage() {
     category: DemandCategory;
     description: string;
     targetCompany?: string;
+    resolutionItems: string[];
   }) => {
     const response = await fetch('/api/demands', {
       method: 'POST',

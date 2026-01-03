@@ -26,6 +26,22 @@ export function DemandCard({ demand, onClick }: DemandCardProps) {
 
   const getCategoryVariant = (category: string) => {
     switch (category) {
+      // Business categories
+      case 'Pricing':
+        return 'warning';
+      case 'Products & Services':
+        return 'center';
+      case 'Locations':
+        return 'default';
+      case 'Customer Experience':
+        return 'center-left';
+      case 'Policies':
+        return 'center-right';
+      case 'Partnerships':
+        return 'right';
+      case 'Employee Treatment':
+        return 'left';
+      // Social/Political categories
       case 'Environmental':
         return 'success';
       case 'Labor Rights':

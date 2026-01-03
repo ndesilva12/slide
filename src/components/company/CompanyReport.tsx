@@ -15,12 +15,13 @@ import {
   Target,
   Newspaper,
   Users,
+  Megaphone,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/Card';
 import { Badge, PoliticalLeaningBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
-import { CompanyReport as CompanyReportType } from '@/types';
+import { CompanyReport as CompanyReportType, Demand } from '@/types';
 import Link from 'next/link';
 import { useUserLists } from '@/contexts/UserListsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -38,6 +39,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [endorseCount, setEndorseCount] = useState<number>(0);
   const [boycottCount, setBoycottCount] = useState<number>(0);
+  const [companyDemands, setCompanyDemands] = useState<Demand[]>([]);
 
   const companyKey = report.companyKey || createCompanyKey(company.name);
   const inSupport = isInSupport(companyKey);
@@ -60,6 +62,22 @@ export function CompanyReportView({ report }: CompanyReportProps) {
     fetchCounts();
   }, [companyKey]);
 
+  // Fetch demands targeting this company
+  useEffect(() => {
+    const fetchDemands = async () => {
+      try {
+        const response = await fetch(`/api/demands?targetCompanyKey=${encodeURIComponent(companyKey)}&status=active&sortBy=popular`);
+        const data = await response.json();
+        if (data.success && data.data?.demands) {
+          setCompanyDemands(data.data.demands);
+        }
+      } catch (err) {
+        // Silently fail - demands are optional
+      }
+    };
+    fetchDemands();
+  }, [companyKey]);
+
   const handleListAction = async (listType: 'support' | 'oppose') => {
     if (!user) {
       setShowLoginModal(true);
@@ -80,6 +98,7 @@ export function CompanyReportView({ report }: CompanyReportProps) {
     statements: true,
     relatedCompanies: true,
     revenue: true,
+    demands: true,
   });
 
   const toggleSection = (section: string) => {
@@ -658,6 +677,73 @@ export function CompanyReportView({ report }: CompanyReportProps) {
                   </div>
                 ))}
               </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
+
+      {/* Active Demands Section */}
+      {companyDemands.length > 0 && (
+        <Card>
+          <CardHeader>
+            <button
+              onClick={() => toggleSection('demands')}
+              className="w-full flex items-center justify-between"
+            >
+              <div className="flex items-center space-x-2">
+                <Megaphone className="h-5 w-5 text-[#741b47]" />
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Active Demands
+                </h2>
+                <Badge variant="center">{companyDemands.length}</Badge>
+              </div>
+              {expandedSections.demands ? (
+                <ChevronUp className="h-5 w-5 text-gray-400" />
+              ) : (
+                <ChevronDown className="h-5 w-5 text-gray-400" />
+              )}
+            </button>
+          </CardHeader>
+
+          {expandedSections.demands && (
+            <CardContent className="p-4 md:p-6 pt-0">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                Petitions and demands from users targeting this company
+              </p>
+              <div className="space-y-3">
+                {companyDemands.map((demand) => (
+                  <Link
+                    key={demand.id}
+                    href={`/demands/${demand.id}`}
+                    className="block p-3 md:p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:border-[#741b47]/50 dark:hover:border-[#741b47]/50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-medium text-sm md:text-base text-gray-900 dark:text-white line-clamp-2">
+                          {demand.title}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-1 flex-wrap">
+                          <Badge variant="default" size="sm">{demand.category}</Badge>
+                          <span className="flex items-center gap-1 text-xs text-[#741b47] dark:text-[#d4619a]">
+                            <Users className="h-3 w-3" />
+                            {demand.coSignCount.toLocaleString()} co-signed
+                          </span>
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-2">
+                          {demand.description}
+                        </p>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <Link
+                href={`/demands?search=${encodeURIComponent(company.name)}`}
+                className="inline-flex items-center gap-1 mt-4 text-sm text-[#741b47] dark:text-[#d4619a] hover:underline"
+              >
+                View all demands
+                <ExternalLink className="h-3 w-3" />
+              </Link>
             </CardContent>
           )}
         </Card>

@@ -22,6 +22,9 @@ import {
   Trash2,
   Calendar,
   User,
+  CheckSquare,
+  Square,
+  Target,
 } from 'lucide-react';
 
 export default function DemandDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -159,6 +162,22 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
 
   const getCategoryVariant = (category: string) => {
     switch (category) {
+      // Business categories
+      case 'Pricing':
+        return 'warning';
+      case 'Products & Services':
+        return 'center';
+      case 'Locations':
+        return 'default';
+      case 'Customer Experience':
+        return 'center-left';
+      case 'Policies':
+        return 'center-right';
+      case 'Partnerships':
+        return 'right';
+      case 'Employee Treatment':
+        return 'left';
+      // Social/Political categories
       case 'Environmental':
         return 'success';
       case 'Labor Rights':
@@ -287,11 +306,57 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 {/* Description */}
-                <div className="prose prose-sm dark:prose-invert max-w-none">
+                <div className="prose prose-sm dark:prose-invert max-w-none mb-6">
                   <p className="text-gray-700 dark:text-gray-300 whitespace-pre-wrap">
                     {demand.description}
                   </p>
                 </div>
+
+                {/* Resolution Items */}
+                {demand.resolutionItems && demand.resolutionItems.length > 0 && (
+                  <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+                    <div className="flex items-center gap-2 mb-3">
+                      <Target className="h-5 w-5 text-[#741b47]" />
+                      <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                        Resolution Items
+                      </h2>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      Actions required for this demand to be considered met:
+                    </p>
+                    <div className="space-y-2">
+                      {demand.resolutionItems.map((item, index) => (
+                        <div
+                          key={item.id || index}
+                          className={`flex items-start gap-3 p-3 rounded-lg ${
+                            item.isCompleted
+                              ? 'bg-green-50 dark:bg-green-900/20'
+                              : 'bg-gray-50 dark:bg-gray-800/50'
+                          }`}
+                        >
+                          {item.isCompleted ? (
+                            <CheckSquare className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
+                          ) : (
+                            <Square className="h-5 w-5 text-gray-400 flex-shrink-0 mt-0.5" />
+                          )}
+                          <span
+                            className={`text-sm ${
+                              item.isCompleted
+                                ? 'text-green-700 dark:text-green-300 line-through'
+                                : 'text-gray-700 dark:text-gray-300'
+                            }`}
+                          >
+                            {item.text}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-400 mt-3">
+                      {demand.resolutionItems.filter((i) => i.isCompleted).length} of{' '}
+                      {demand.resolutionItems.length} completed
+                    </p>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -361,10 +426,10 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
               <Card>
                 <CardContent className="p-4">
                   <h3 className="text-sm font-medium text-gray-900 dark:text-white mb-3">
-                    Recent Co-signers
+                    Recent Co-signers ({coSigners.length})
                   </h3>
                   <div className="space-y-2">
-                    {(showAllCoSigners ? coSigners : coSigners.slice(0, 5)).map((signer) => (
+                    {(showAllCoSigners ? coSigners : coSigners.slice(0, 10)).map((signer) => (
                       <div key={signer.id} className="flex items-center gap-2">
                         {signer.userPhotoURL ? (
                           <img
@@ -385,12 +450,12 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
                       </div>
                     ))}
                   </div>
-                  {coSigners.length > 5 && (
+                  {coSigners.length > 10 && (
                     <button
                       onClick={() => setShowAllCoSigners(!showAllCoSigners)}
                       className="text-xs text-[#741b47] dark:text-[#d4619a] hover:underline mt-2"
                     >
-                      {showAllCoSigners ? 'Show less' : `+ ${coSigners.length - 5} more`}
+                      {showAllCoSigners ? 'Show less' : `+ ${coSigners.length - 10} more`}
                     </button>
                   )}
                 </CardContent>

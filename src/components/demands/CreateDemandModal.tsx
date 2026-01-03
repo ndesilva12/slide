@@ -5,18 +5,30 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card, CardContent } from '@/components/ui/Card';
 import { DemandCategory } from '@/types';
-import { X, Megaphone } from 'lucide-react';
+import { X, Megaphone, Plus, Trash2, CheckSquare } from 'lucide-react';
 
-const CATEGORIES: DemandCategory[] = [
-  'Environmental',
-  'Labor Rights',
-  'Corporate Governance',
-  'Consumer Protection',
-  'Social Justice',
-  'Political Transparency',
-  'Privacy & Data',
-  'Other',
-];
+// Organized categories
+const CATEGORY_GROUPS = {
+  'Business & Customer': [
+    'Pricing',
+    'Products & Services',
+    'Locations',
+    'Customer Experience',
+    'Policies',
+    'Partnerships',
+    'Employee Treatment',
+  ] as DemandCategory[],
+  'Social & Political': [
+    'Environmental',
+    'Labor Rights',
+    'Corporate Governance',
+    'Consumer Protection',
+    'Social Justice',
+    'Political Transparency',
+    'Privacy & Data',
+    'Other',
+  ] as DemandCategory[],
+};
 
 interface CreateDemandModalProps {
   isOpen: boolean;
@@ -26,6 +38,7 @@ interface CreateDemandModalProps {
     category: DemandCategory;
     description: string;
     targetCompany?: string;
+    resolutionItems: string[];
   }) => Promise<void>;
 }
 
@@ -34,10 +47,29 @@ export function CreateDemandModal({ isOpen, onClose, onSubmit }: CreateDemandMod
   const [category, setCategory] = useState<DemandCategory>('Other');
   const [description, setDescription] = useState('');
   const [targetCompany, setTargetCompany] = useState('');
+  const [resolutionItems, setResolutionItems] = useState<string[]>(['']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   if (!isOpen) return null;
+
+  const handleAddResolutionItem = () => {
+    if (resolutionItems.length < 10) {
+      setResolutionItems([...resolutionItems, '']);
+    }
+  };
+
+  const handleRemoveResolutionItem = (index: number) => {
+    if (resolutionItems.length > 1) {
+      setResolutionItems(resolutionItems.filter((_, i) => i !== index));
+    }
+  };
+
+  const handleResolutionItemChange = (index: number, value: string) => {
+    const updated = [...resolutionItems];
+    updated[index] = value;
+    setResolutionItems(updated);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,6 +88,13 @@ export function CreateDemandModal({ isOpen, onClose, onSubmit }: CreateDemandMod
       return;
     }
 
+    // Filter out empty resolution items
+    const validResolutions = resolutionItems.filter((item) => item.trim());
+    if (validResolutions.length === 0) {
+      setError('At least one resolution item is required');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       await onSubmit({
@@ -63,12 +102,14 @@ export function CreateDemandModal({ isOpen, onClose, onSubmit }: CreateDemandMod
         category,
         description: description.trim(),
         targetCompany: targetCompany.trim() || undefined,
+        resolutionItems: validResolutions.map((item) => item.trim()),
       });
       // Reset form
       setTitle('');
       setCategory('Other');
       setDescription('');
       setTargetCompany('');
+      setResolutionItems(['']);
       onClose();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create demand');
@@ -121,10 +162,14 @@ export function CreateDemandModal({ isOpen, onClose, onSubmit }: CreateDemandMod
                 onChange={(e) => setCategory(e.target.value as DemandCategory)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#741b47]/50"
               >
-                {CATEGORIES.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
+                {Object.entries(CATEGORY_GROUPS).map(([groupName, categories]) => (
+                  <optgroup key={groupName} label={groupName}>
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </optgroup>
                 ))}
               </select>
             </div>
@@ -150,12 +195,62 @@ export function CreateDemandModal({ isOpen, onClose, onSubmit }: CreateDemandMod
                 placeholder="Explain your demand in detail. Why is this important? What specific changes are you asking for? Who does this affect?"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                rows={6}
+                rows={5}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-[#741b47]/50 resize-none"
                 maxLength={5000}
               />
               <p className="text-xs text-gray-400 mt-1">
                 {description.length}/5000 characters (minimum 50)
+              </p>
+            </div>
+
+            {/* Resolution Items */}
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <CheckSquare className="h-4 w-4 text-[#741b47]" />
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Resolution Items *
+                </label>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                List the specific actions that must be taken for this demand to be considered met.
+              </p>
+              <div className="space-y-2">
+                {resolutionItems.map((item, index) => (
+                  <div key={index} className="flex gap-2">
+                    <div className="flex-shrink-0 w-6 h-9 flex items-center justify-center text-xs text-gray-400">
+                      {index + 1}.
+                    </div>
+                    <Input
+                      placeholder={`Action item ${index + 1}...`}
+                      value={item}
+                      onChange={(e) => handleResolutionItemChange(index, e.target.value)}
+                      maxLength={200}
+                    />
+                    {resolutionItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveResolutionItem(index)}
+                        className="flex-shrink-0 p-2 text-gray-400 hover:text-red-500 rounded"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {resolutionItems.length < 10 && (
+                <button
+                  type="button"
+                  onClick={handleAddResolutionItem}
+                  className="mt-2 flex items-center gap-1 text-sm text-[#741b47] dark:text-[#d4619a] hover:underline"
+                >
+                  <Plus className="h-3 w-3" />
+                  Add another item
+                </button>
+              )}
+              <p className="text-xs text-gray-400 mt-1">
+                {resolutionItems.filter((i) => i.trim()).length}/10 items
               </p>
             </div>
 
