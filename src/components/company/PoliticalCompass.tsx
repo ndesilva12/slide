@@ -33,9 +33,9 @@ function getLeaningColor(leaning?: string): { bg: string; text: string; border: 
       };
     case 'Center-Right':
       return {
-        bg: 'bg-fuchsia-100 dark:bg-fuchsia-900/30',
-        text: 'text-fuchsia-600 dark:text-fuchsia-400',
-        border: 'border-fuchsia-300 dark:border-fuchsia-700'
+        bg: 'bg-rose-100 dark:bg-rose-900/30',
+        text: 'text-rose-600 dark:text-rose-400',
+        border: 'border-rose-300 dark:border-rose-700'
       };
     case 'Right':
       return {

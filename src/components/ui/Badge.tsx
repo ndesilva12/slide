@@ -17,8 +17,8 @@ export function Badge({ children, variant = 'default', size = 'md', className = 
     'center-left': 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
     // Center - magenta
     center: 'bg-[#741b47]/10 text-[#741b47] dark:bg-[#741b47]/30 dark:text-[#d4619a]',
-    // Right leaning - red/purple
-    'center-right': 'bg-fuchsia-100 text-fuchsia-700 dark:bg-fuchsia-900/50 dark:text-fuchsia-300',
+    // Right leaning - maroon/red
+    'center-right': 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-300',
     right: 'bg-red-100 text-red-700 dark:bg-red-900/50 dark:text-red-300',
     // Utility variants
     success: 'bg-green-100 text-green-700 dark:bg-green-900/50 dark:text-green-300',
