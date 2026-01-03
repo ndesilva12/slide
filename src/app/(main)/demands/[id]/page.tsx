@@ -25,6 +25,7 @@ import {
   CheckSquare,
   Square,
   Target,
+  Ban,
 } from 'lucide-react';
 
 export default function DemandDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -35,9 +36,12 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
   const [isLoading, setIsLoading] = useState(true);
   const [hasCoSigned, setHasCoSigned] = useState(false);
   const [coSigners, setCoSigners] = useState<DemandCoSigner[]>([]);
+  const [boycotters, setBoycotters] = useState<DemandCoSigner[]>([]);
+  const [boycotterCount, setBoycotterCount] = useState(0);
   const [isCoSigning, setIsCoSigning] = useState(false);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [showAllCoSigners, setShowAllCoSigners] = useState(false);
+  const [showAllBoycotters, setShowAllBoycotters] = useState(false);
   const [error, setError] = useState('');
 
   useEffect(() => {
@@ -71,6 +75,8 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
       if (data.success && data.data) {
         setHasCoSigned(data.data.hasCoSigned);
         setCoSigners(data.data.coSigners);
+        setBoycotters(data.data.boycotters || []);
+        setBoycotterCount(data.data.boycotterCount || 0);
       }
     } catch (err) {
       console.error('Failed to load co-sign status:', err);
@@ -456,6 +462,54 @@ export default function DemandDetailPage({ params }: { params: Promise<{ id: str
                       className="text-xs text-[#741b47] dark:text-[#d4619a] hover:underline mt-2"
                     >
                       {showAllCoSigners ? 'Show less' : `+ ${coSigners.length - 10} more`}
+                    </button>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Official Boycotters - Co-signers who have the company in their boycott list */}
+            {demand.targetCompany && boycotterCount > 0 && (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Ban className="h-4 w-4 text-red-500" />
+                    <h3 className="text-sm font-medium text-gray-900 dark:text-white">
+                      Official Boycotters ({boycotterCount})
+                    </h3>
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                    Co-signers who have {demand.targetCompany} in their boycott list
+                  </p>
+                  <div className="space-y-2">
+                    {(showAllBoycotters ? boycotters : boycotters.slice(0, 10)).map((boycotter) => (
+                      <div key={boycotter.id} className="flex items-center gap-2">
+                        {boycotter.userPhotoURL ? (
+                          <img
+                            src={boycotter.userPhotoURL}
+                            alt={boycotter.userName}
+                            className="w-6 h-6 rounded-full"
+                          />
+                        ) : (
+                          <div className="w-6 h-6 rounded-full bg-red-500/20 flex items-center justify-center">
+                            <span className="text-xs font-medium text-red-500">
+                              {boycotter.userName.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                        <span className="text-sm text-gray-700 dark:text-gray-300 truncate">
+                          {boycotter.userName}
+                        </span>
+                        <Ban className="h-3 w-3 text-red-400 ml-auto" />
+                      </div>
+                    ))}
+                  </div>
+                  {boycotters.length > 10 && (
+                    <button
+                      onClick={() => setShowAllBoycotters(!showAllBoycotters)}
+                      className="text-xs text-red-500 hover:underline mt-2"
+                    >
+                      {showAllBoycotters ? 'Show less' : `+ ${boycotters.length - 10} more`}
                     </button>
                   )}
                 </CardContent>

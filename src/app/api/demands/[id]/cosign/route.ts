@@ -2,7 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirebaseAdmin } from '@/lib/firebase-admin';
 import { FieldValue } from 'firebase-admin/firestore';
 
-// GET - Check if user has co-signed and get co-signer list
+// Helper to generate company key from name
+function generateCompanyKey(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+}
+
+// GET - Check if user has co-signed and get co-signer list with boycott info
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -15,8 +20,16 @@ export async function GET(
 
     const { db } = getFirebaseAdmin();
     if (!db) {
-      return NextResponse.json({ success: true, data: { hasCoSigned: false, coSigners: [] } });
+      return NextResponse.json({
+        success: true,
+        data: { hasCoSigned: false, coSigners: [], boycotters: [], boycotterCount: 0 }
+      });
     }
+
+    // Get the demand to find the target company
+    const demandDoc = await db.collection('demands').doc(id).get();
+    const demandData = demandDoc.data();
+    const targetCompanyKey = demandData?.targetCompanyKey;
 
     // Check if user has co-signed
     let hasCoSigned = false;
@@ -51,9 +64,53 @@ export async function GET(
       };
     });
 
+    // If there's a target company, find co-signers who are also boycotting it
+    let boycotters: typeof coSigners = [];
+    let boycotterCount = 0;
+
+    if (targetCompanyKey && coSigners.length > 0) {
+      // Get all co-signer user IDs
+      const allCoSignersSnapshot = await db
+        .collection('demands')
+        .doc(id)
+        .collection('coSigners')
+        .get();
+
+      const allCoSignerIds = allCoSignersSnapshot.docs.map(doc => doc.data().userId);
+
+      // Check each co-signer's boycott list (batch in groups of 10 for Firestore limits)
+      const boycotterIds = new Set<string>();
+
+      for (let i = 0; i < allCoSignerIds.length; i += 10) {
+        const batch = allCoSignerIds.slice(i, i + 10);
+        const userListsPromises = batch.map(uid =>
+          db.collection('userLists').doc(uid).get()
+        );
+        const userListsDocs = await Promise.all(userListsPromises);
+
+        userListsDocs.forEach((doc, idx) => {
+          if (doc.exists) {
+            const data = doc.data();
+            const opposeList = data?.oppose || [];
+            const hasBoycotted = opposeList.some(
+              (item: { companyKey: string }) => item.companyKey === targetCompanyKey
+            );
+            if (hasBoycotted) {
+              boycotterIds.add(batch[idx]);
+            }
+          }
+        });
+      }
+
+      boycotterCount = boycotterIds.size;
+
+      // Get boycotter details from our co-signers list
+      boycotters = coSigners.filter(cs => boycotterIds.has(cs.userId)).slice(0, 10);
+    }
+
     return NextResponse.json({
       success: true,
-      data: { hasCoSigned, coSigners },
+      data: { hasCoSigned, coSigners, boycotters, boycotterCount },
     });
   } catch (error) {
     console.error('Failed to fetch co-signers:', error);
